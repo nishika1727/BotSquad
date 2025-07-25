@@ -23,12 +23,12 @@ def init_embed_model():
 def init_reranker():
     return CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
 
-def init_vector_store(persist_dir="./chroma_db1", collection_name="rag-collection"):
+def init_vector_store(persist_dir="./chroma_db", collection_name="rag-collection"):
     client = PersistentClient(path=persist_dir)
     collection = client.get_or_create_collection(collection_name)
     return ChromaVectorStore(chroma_collection=collection, persist_path=persist_dir)
 
-def load_index(persist_dir="./chroma_db1", index_dir="./index", embed_model=None, vector_store=None):
+def load_index(persist_dir="./chroma_db", index_dir="./index", embed_model=None, vector_store=None):
     storage_context = StorageContext.from_defaults(persist_dir=index_dir, vector_store=vector_store)
     return load_index_from_storage(storage_context, embed_model=embed_model)
 
@@ -68,7 +68,7 @@ def generate_answer(query, pipeline):
     prompt = f"""
 You are PU-Assistant, the official AI helpdesk chatbot of Panjab University, Chandigarh.
 
-You must answer the student's query **strictly** using the verified information provided below in the context.
+You must answer the student's query strictly using the verified information provided below in the context.
  Never use your own knowledge, never guess, and never add anything not explicitly present in the context.
 
 Answering Rules (apply exactly as written):
@@ -77,7 +77,7 @@ Answering Rules (apply exactly as written):
 2. For simple factual or definition-style questions:
    → Reply in one direct, precise sentence.
 3. If any web page, downloadable form, or PDF is mentioned in the context:
-   → → Include it in the response as a clickable markdown link, but **always** use the exact text given by the system later (e.g., "📄 Download official fee PDF here" or "🌐 Visit official admission portal"). Never write “Visit official page” or “Visit official website” yourself.
+   → → Include it in the response as a clickable markdown link, but always use the exact text given by the system later (e.g., "📄 Download official fee PDF here" or "🌐 Visit official admission portal"). Never write “Visit official page” or “Visit official website” yourself.
    → Only include links that are clearly found in the context.
 4. All links must open in a new browser tab.
 5. Never guess, assume, or generate a URL or link that is not found in the context.
@@ -93,14 +93,14 @@ Answering Rules (apply exactly as written):
 10. Avoid repetition and unnecessary introductions.
 11. IMPORTANT: Always answer using exactly the same bullet titles, same order, and same style every time this question is asked — so repeated questions get the same answer.
 12. Strictly answer only from the "Verified Information" context below.
-13. If required details (like exam name, eligibility, process) are present in context, you **must** include them.
-14. Do **NOT** add any information not present in context.
+13. If required details (like exam name, eligibility, process) are present in context, you must include them.
+14. Do NOT add any information not present in context.
 15. You must answer strictly about the admission process only, if that's what is asked.
 16. Ignore fee, hostel, scholarships, or anything else even if present in context, unless specifically asked.
 17. If the user's question contains an unclear, misspelled, or unknown word (e.g., "stuce") and you don't know its meaning, do NOT guess.
     → Instead, politely ask:
     > Sorry, could you please clarify what you meant by "stuce"?
-18. If same question is asked again, answer *exactly* the same as before, unless context changed.
+18. If same question is asked again, answer exactly the same as before, unless context changed.
 
 Smart Clarification Logic (very important):
 - If the student's question is vague, generic, incomplete, or broad (e.g., “fee structure”, “course”, “apply”, “form”, “hostel”, “scholarship”, etc.):
@@ -140,13 +140,13 @@ Follow-Up Suggestions (only after giving a complete answer):
  - Question 2  
  - Question 3
 
-**Use only this verified information to answer:**
+Use only this verified information to answer:
 {context}
 
-**Student’s Question:**
+Student’s Question:
 {query}
 
-**Your Answer:**
+Your Answer:
 """.strip()
 
     response = llm.complete(prompt)
@@ -160,29 +160,36 @@ Follow-Up Suggestions (only after giving a complete answer):
         follow_lines = parts[1].strip().splitlines()
         follow_ups = [line.replace("-", "").strip() for line in follow_lines if line.strip()]
 
+        # --------- DETECT INTENT + LINK ---------
     query_lower = query.lower()
-    friendly_label = None
-    pdf_url = None
-
     detected_link = None
     for intent, data in intent_to_url.items():
-        keywords = data.get("keywords", [])
-        urls = data.get("urls", [])
-        if any(keyword in query_lower for keyword in keywords):
-            detected_link = urls[0] if isinstance(urls, list) else urls
+        if any(kw in query_lower for kw in data.get("keywords", [])):
+            detected_link = data["urls"][0]  # only use first link
             break
 
-    if "fee" in query_lower and "pdf" not in answer_main.lower():
-        pdf_url = "http://127.0.0.1:5000/files/pu_fee_structure.pdf"
-        friendly_label = f"\n\n📄 [Download official fee PDF here]({pdf_url})"
-    elif detected_link and detected_link not in answer_main:
-        if "admission" in query_lower or "apply" in query_lower:
-            friendly_label = f"\n\n🌐 [Visit official admission portal]({detected_link})"
-        else:
-            friendly_label = f"\n\n🔗 [Visit official related page]({detected_link})"
+    pdf_url = "http://127.0.0.1:5000/files/pu_fee_structure.pdf"
+    should_add_pdf = "fee" in query_lower and "pdf" not in answer_main.lower()
+    
+    # --------- INSERT RELEVANT LINK ONLY IF MISSING ---------
+    def already_contains_url(text, url):
+        return f"]({url})" in text or url in text
 
-    if friendly_label and friendly_label not in answer_main:
-        answer_main += friendly_label
+    # Add fee PDF link
+    if should_add_pdf and not already_contains_url(answer_main, pdf_url):
+        answer_main += f"\n\n📄 [Download official fee PDF here]({pdf_url})"
+    
+    # Add detected intent link (admission, exam, etc.)
+    elif detected_link and not already_contains_url(answer_main, detected_link):
+        # Choose icon and label based on intent
+        if "admission" in query_lower:
+            answer_main += f"\n\n🌐 [Visit official admission portal]({detected_link})"
+        elif "fee" in query_lower:
+            # If not PDF, give main fee page
+            answer_main += f"\n\n💳 [Visit fee payment page]({detected_link})"
+        else:
+            answer_main += f"\n\n🔗 [Visit official related page]({detected_link})"
+
 
     return {
         "reply": answer_main,
@@ -205,5 +212,11 @@ def chat():
 def download_file(filename):
     return send_from_directory('static', filename, as_attachment=True)
 
+@app.route("/healthz", methods=["GET"])
+def health_check():
+    return "OK", 200
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
+
+
