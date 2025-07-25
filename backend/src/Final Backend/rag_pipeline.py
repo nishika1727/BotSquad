@@ -1,60 +1,65 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, session
 from flask_cors import CORS
 from llama_index.core import StorageContext, load_index_from_storage
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.groq import Groq
 from chromadb import PersistentClient
-from sentence_transformers import CrossEncoder
-from intent_links import intent_to_url
+from llama_index.llms.base import ChatMessage, MessageRole
 
-# ---------- ENV + INIT ----------
-def load_environment():
-    load_dotenv()
+# Load environment variables
+load_dotenv()
 
-def init_llm():
-    return Groq(model="llama3-8b-8192", api_key=os.getenv("GROQ_API_KEY"), temperature=0.1)
+# Flask App Setup
+app = Flask(__name__)
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "supersecretkey")
+CORS(app, supports_credentials=True)
 
-def init_embed_model():
-    return HuggingFaceEmbedding(model_name="sentence-transformers/all-MiniLM-L6-v2")
+# LLM and Embedding Model Setup
+llm = Groq(model="mixtral-8x7b-32768", api_key=os.getenv("GROQ_API_KEY"))
+embed_model = HuggingFaceEmbedding(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
-def init_reranker():
-    return CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
+# Chroma Vector Store Setup
+db = PersistentClient(path="./chroma_db")
+chroma_collection = db.get_or_create_collection("pu_docs")
+vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+storage_context = StorageContext.from_defaults(vector_store=vector_store)
+index = load_index_from_storage(storage_context, embed_model=embed_model)
 
-def init_vector_store(persist_dir="./chroma_db", collection_name="rag-collection"):
-    client = PersistentClient(path=persist_dir)
-    collection = client.get_or_create_collection(collection_name)
-    return ChromaVectorStore(chroma_collection=collection, persist_path=persist_dir)
-
-def load_index(persist_dir="./chroma_db", index_dir="./index", embed_model=None, vector_store=None):
-    storage_context = StorageContext.from_defaults(persist_dir=index_dir, vector_store=vector_store)
-    return load_index_from_storage(storage_context, embed_model=embed_model)
-
-def initialize_pipeline():
-    load_environment()
-    embed_model = init_embed_model()
-    vector_store = init_vector_store()
-    return {
-        "llm": init_llm(),
-        "embed_model": embed_model,
-        "reranker": init_reranker(),
-        "vector_store": vector_store,
-        "index": load_index(embed_model=embed_model, vector_store=vector_store)
+# Intent → Link Mapping
+intent_to_url = {
+    "admission": {
+        "keywords": ["admission", "apply", "application"],
+        "urls": ["https://admissions.puchd.ac.in"]
+    },
+    "prospectus": {
+        "keywords": ["prospectus"],
+        "urls": ["https://admissions.puchd.ac.in/includes/admnpros2024.pdf"]
+    },
+    "hostel": {
+        "keywords": ["hostel"],
+        "urls": ["https://puchd.ac.in/facilities/hostel"]
+    },
+    "fee": {
+        "keywords": ["fee", "fees"],
+        "urls": ["https://dui.puchd.ac.in/syllabus.php"]
     }
+}
 
-# ---------- SESSION ----------
-session = {"original_query": None, "expecting_clarification": False}
+pipeline = {"llm": llm, "index": index}
 
-# ---------- MAIN ANSWER FUNCTION ----------
+# ---------------------------
+# Main Answer Generator
+# ---------------------------
 def generate_answer(query, pipeline):
     llm = pipeline["llm"]
     index = pipeline["index"]
 
     vague_keywords = ["fee", "admission", "form", "hostel", "apply", "scholarship", "process"]
 
-    if session["expecting_clarification"] and session["original_query"]:
+    if session.get("expecting_clarification") and session.get("original_query"):
         query = f"{session['original_query']} for {query}"
         session["original_query"] = None
         session["expecting_clarification"] = False
@@ -62,13 +67,15 @@ def generate_answer(query, pipeline):
         session["original_query"] = query
         session["expecting_clarification"] = True
 
+    # Retrieve top 3 similar chunks
     retriever = index.as_retriever(similarity_top_k=3)
     context = "\n\n---\n\n".join(node.get_content() for node in retriever.retrieve(query))
 
+    # Final Prompt to LLM
     prompt = f"""
 You are PU-Assistant, the official AI helpdesk chatbot of Panjab University, Chandigarh.
 
-You must answer the student's query strictly using the verified information provided below in the context.
+You must answer the student's query *strictly* using the verified information provided below in the context.
  Never use your own knowledge, never guess, and never add anything not explicitly present in the context.
 
 Answering Rules (apply exactly as written):
@@ -77,7 +84,7 @@ Answering Rules (apply exactly as written):
 2. For simple factual or definition-style questions:
    → Reply in one direct, precise sentence.
 3. If any web page, downloadable form, or PDF is mentioned in the context:
-   → → Include it in the response as a clickable markdown link, but always use the exact text given by the system later (e.g., "📄 Download official fee PDF here" or "🌐 Visit official admission portal"). Never write “Visit official page” or “Visit official website” yourself.
+   → → Include it in the response as a clickable markdown link, but *always* use the exact text given by the system later (e.g., "📄 Download official fee PDF here" or "🌐 Visit official admission portal"). Never write “Visit official page” or “Visit official website” yourself.
    → Only include links that are clearly found in the context.
 4. All links must open in a new browser tab.
 5. Never guess, assume, or generate a URL or link that is not found in the context.
@@ -93,8 +100,8 @@ Answering Rules (apply exactly as written):
 10. Avoid repetition and unnecessary introductions.
 11. IMPORTANT: Always answer using exactly the same bullet titles, same order, and same style every time this question is asked — so repeated questions get the same answer.
 12. Strictly answer only from the "Verified Information" context below.
-13. If required details (like exam name, eligibility, process) are present in context, you must include them.
-14. Do NOT add any information not present in context.
+13. If required details (like exam name, eligibility, process) are present in context, you *must* include them.
+14. Do *NOT* add any information not present in context.
 15. You must answer strictly about the admission process only, if that's what is asked.
 16. Ignore fee, hostel, scholarships, or anything else even if present in context, unless specifically asked.
 17. If the user's question contains an unclear, misspelled, or unknown word (e.g., "stuce") and you don't know its meaning, do NOT guess.
@@ -140,83 +147,77 @@ Follow-Up Suggestions (only after giving a complete answer):
  - Question 2  
  - Question 3
 
-Use only this verified information to answer:
+*Use only this verified information to answer:*
 {context}
 
-Student’s Question:
+*Student’s Question:*
 {query}
 
-Your Answer:
+*Your Answer:*
 """.strip()
 
-    response = llm.complete(prompt)
-    full_text = response.text.strip()
+    response = llm.chat(messages=[
+        ChatMessage(role=MessageRole.SYSTEM, content="You are a helpful assistant."),
+        ChatMessage(role=MessageRole.USER, content=prompt)
+    ])
 
+    full_text = response.message.content.strip()
     answer_main = full_text
     follow_ups = []
+
     if "Know more about:" in full_text:
         parts = full_text.split("Know more about:")
         answer_main = parts[0].strip()
         follow_lines = parts[1].strip().splitlines()
         follow_ups = [line.replace("-", "").strip() for line in follow_lines if line.strip()]
 
-        # --------- DETECT INTENT + LINK ---------
     query_lower = query.lower()
+    friendly_label = None
+    pdf_url = None
     detected_link = None
+
     for intent, data in intent_to_url.items():
-        if any(kw in query_lower for kw in data.get("keywords", [])):
-            detected_link = data["urls"][0]  # only use first link
+        keywords = data.get("keywords", [])
+        urls = data.get("urls", [])
+        if any(keyword in query_lower for keyword in keywords):
+            detected_link = urls[0] if isinstance(urls, list) else urls
             break
 
-    pdf_url = "http://127.0.0.1:5000/files/pu_fee_structure.pdf"
-    should_add_pdf = "fee" in query_lower and "pdf" not in answer_main.lower()
-    
-    # --------- INSERT RELEVANT LINK ONLY IF MISSING ---------
-    def already_contains_url(text, url):
-        return f"]({url})" in text or url in text
-
-    # Add fee PDF link
-    if should_add_pdf and not already_contains_url(answer_main, pdf_url):
-        answer_main += f"\n\n📄 [Download official fee PDF here]({pdf_url})"
-    
-    # Add detected intent link (admission, exam, etc.)
-    elif detected_link and not already_contains_url(answer_main, detected_link):
-        # Choose icon and label based on intent
-        if "admission" in query_lower:
-            answer_main += f"\n\n🌐 [Visit official admission portal]({detected_link})"
-        elif "fee" in query_lower:
-            # If not PDF, give main fee page
-            answer_main += f"\n\n💳 [Visit fee payment page]({detected_link})"
-        else:
-            answer_main += f"\n\n🔗 [Visit official related page]({detected_link})"
-
+    if "fee" in query_lower and "pdf" not in answer_main.lower():
+        pdf_url = "http://127.0.0.1:5000/files/pu_fee_structure.pdf"
+        friendly_label = f"\n\n📄 [Download official fee PDF here]({pdf_url})"
+    elif detected_link and detected_link not in answer_main:
+        if "admission" in query_lower or "apply" in query_lower:
+            friendly_label = f"\n\n🔗 [Apply here]({detected_link})"
+        elif "prospectus" in query_lower:
+            friendly_label = f"\n\n📄 [View official prospectus]({detected_link})"
+        elif "hostel" in query_lower:
+            friendly_label = f"\n\n🏨 [Hostel Info]({detected_link})"
 
     return {
-        "reply": answer_main,
-        "follow_ups": follow_ups if follow_ups else ["Scholarships", "Hostels", "Campus Life"]
+        "answer": answer_main,
+        "follow_ups": follow_ups,
+        "pdf_url": pdf_url,
+        "link": friendly_label
     }
 
-# ---------- FLASK ----------
-app = Flask(__name__)
-CORS(app)
-pipeline = initialize_pipeline()
+# ---------------------------
+# API Routes
+# ---------------------------
 
-@app.route('/api/chat', methods=['POST'])
-def chat():
+@app.route("/query", methods=["POST"])
+def query():
     data = request.get_json()
-    user_query = data.get('message', '')
+    user_query = data.get("query")
     result = generate_answer(user_query, pipeline)
     return jsonify(result)
 
-@app.route('/files/<path:filename>', methods=['GET'])
-def download_file(filename):
-    return send_from_directory('static', filename, as_attachment=True)
+@app.route("/files/<path:filename>")
+def serve_file(filename):
+    return send_from_directory("static", filename)
 
-@app.route("/healthz", methods=["GET"])
-def health_check():
-    return "OK", 200
-
+# ---------------------------
+# Run Flask App
+# ---------------------------
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
-
-
+    app.run(debug=True, port=5000)
