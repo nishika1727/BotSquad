@@ -49,3 +49,86 @@ streamlit run app.py
 | 4    | Embedding with HuggingFace, indexing via LlamaIndex         |
 | 5    | Chatbot development and Streamlit interface integration     |
 | 6    | Final testing, documentation, demo upload, and presentation prep |
+
+
+## 💡 Project File Structure & Key Components
+
+### 📁 Frontend Main Component
+
+> 📄 **Location:** `frontend/src/App.tsx`
+
+This file contains the **main React component** that renders the chatbot UI.  
+It includes:
+- User and assistant chat bubbles
+- Quick reply buttons
+- Markdown support with clickable links
+- Responsive design for mobile
+  
+This is where the chatbot messages are displayed and sent to the backend via API.
+
+### 🎨 Frontend Global Styling
+
+> 📄 **Location:** `frontend/src/index.css`
+
+This file defines the **global styling** for the chatbot UI.  
+It includes:
+- Chat layout and message alignment (user/assistant)
+- Chat bubble design and colors
+- Button styling (feedback, quick replies)
+- Scrollbar and mobile responsiveness
+- Font, spacing, and hover effects
+
+This CSS ensures a clean and user-friendly appearance of the chatbot interface.
+
+##  Backend Directory Structure
+
+📁 **Path:** `backend/src/Final Backend/`
+
+This folder contains the complete Flask-based RAG chatbot backend for Panjab University. Below is the breakdown of important files and folders:
+
+---
+
+### 📄 Python Files
+
+| File Name             | Description                                                 |
+|-----------------------|-------------------------------------------------------------|
+| `app.py`              | Flask server entry point.                                   |
+| `rag_pipeline.py`     | Main RAG pipeline logic with retrieval + generation.        |
+| `indexing.py`         | Handles indexing of data into vector store.                 |
+| `intent_links.py`     | Keyword-to-URL intent mapping logic.                        |
+| `db_creation.py`      | CSV/JSON creation script from raw scraped data.             |
+
+---
+
+### 📊 Data & Notebooks
+
+| File Name                            | Description                                                |
+|--------------------------------------|------------------------------------------------------------|
+| `data.jsonl`                         | JSON version of above data for easy parsing.                  |
+| `Collecting and cleaning data.ipynb` | Notebook for scraping and cleaning raw admission data.     |
+| `Data collection.ipynb`              | Notebook to collect data from PU website.                  |
+
+---
+
+### 📁 Folders
+
+| Folder Name      | Description                                                    |
+|------------------|----------------------------------------------------------------|
+| `chroma_db/`     | Stores Chroma vector DB files.                                 |
+| `index/`         | LlamaIndex-generated index folder.                             |
+| `static/`        | Flask static file folder (if needed).                          |
+| `venv/`          | Python virtual environment (not pushed to GitHub).             |
+
+---
+
+### ⚙️ Config & Dependencies
+
+| File Name         | Description                                        |
+|-------------------|----------------------------------------------------|
+| `.env`            | Environment variables (API keys, etc.).            |
+| `requirements.txt`| Python dependencies required for backend.          |
+
+
+Google Drive Link - [https://drive.google.com/drive/folders/1sHEoTyRxrI7slUVEAfngH8v_WSv5__8J?usp=sharing ]
+
+---
