@@ -120,17 +120,24 @@ const App = () => {
   {messages.map((msg, i) => (
     <div key={i} className={`message-row ${msg.role}`}>
       <div className={`message-bubble ${msg.role}`}>
-        <ReactMarkdown
-          components={{
-            a: ({ href, children }) => (
-              <a href={href} target="_blank" rel="noopener noreferrer">
-                {children}
-              </a>
-            ),
-          }}
-        >
-          {msg.text}
-        </ReactMarkdown>
+
+<ReactMarkdown
+  components={{
+    a: ({ href, children }) => (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ color: '#2e5cff', textDecoration: 'underline' }}
+      >
+        {children}
+      </a>
+    ),
+    li: ({ children }) => <li style={{ marginBottom: '4px' }}>{children}</li>,
+  }}
+>
+  {msg.text}
+</ReactMarkdown>
 
         {msg.pdfUrl && (
           <a
