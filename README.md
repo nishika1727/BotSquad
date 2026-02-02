@@ -128,6 +128,12 @@ This folder contains the complete Flask-based RAG chatbot backend for Panjab Uni
 | `.env`            | Environment variables (API keys, etc.).            |
 | `requirements.txt`| Python dependencies required for backend.          |
 
+## 🖥️ Chatbot User Interface
+
+<p align="center">
+  <img src="assets/chatbot-ui.png" width="750"/>
+</p>
+
 
 Google Drive Link - [https://drive.google.com/drive/folders/1sHEoTyRxrI7slUVEAfngH8v_WSv5__8J?usp=sharing ]
 
