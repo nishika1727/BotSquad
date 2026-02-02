@@ -137,6 +137,19 @@ This folder contains the complete Flask-based RAG chatbot backend for Panjab Uni
 <p align="center">
   <img src="https://raw.githubusercontent.com/nikhil1234567890123/RAG-Based-Chatbot-for-PU-Campus/main/Working%20Demo/Screenshot%202025-11-29%20201637.png" width="750"/>
 </p>
+## 📸 Additional Demo Screenshots
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/nikhil1234567890123/RAG-Based-Chatbot-for-PU-Campus/main/Working%20Demo/WhatsApp%20Image%202026-02-02%20at%207.02.33%20PM.jpeg" width="750"/>
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/nikhil1234567890123/RAG-Based-Chatbot-for-PU-Campus/main/Working%20Demo/WhatsApp%20Image%202026-02-02%20at%207.02.33%20PM%20(1).jpeg" width="750"/>
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/nikhil1234567890123/RAG-Based-Chatbot-for-PU-Campus/main/Working%20Demo/WhatsApp%20Image%202026-02-02%20at%207.02.33%20PM%20(2).jpeg" width="750"/>
+</p>
 
 
 
