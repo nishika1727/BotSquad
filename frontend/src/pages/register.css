@@ -1,0 +1,140 @@
+body {
+  background: linear-gradient(135deg, #fce4ec, #fff0f5);
+  font-family: Arial, sans-serif;
+}
+
+.register-page {
+  
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  background: #ffffff7a;
+  text-align: center;
+
+}
+
+.register-page h2 {
+  margin-bottom: 20px;
+  color: #b30000;
+}
+
+.register-form {
+  background: #ffe5e5;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.register-form label {
+font-size: 0.9rem;
+  font-weight: bold;
+  margin: 8px 0 4px;
+  color: #5a0000;
+  text-align: left; 
+}
+
+.register-form input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #aaa;
+  border-radius: 10px;
+}
+
+.btn {
+  margin-top: 12px;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  background: #ff4d4d;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #e60000;
+}
+
+.switch-auth {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.switch-auth .link {
+  color: #5a0000;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.switch-auth .link:hover {
+  color: #af0202ff;
+  text-decoration: underline;
+}
+/* 🌐 Responsive design */
+@media (max-width: 480px) {
+  .register-page {
+    margin: 50px 20px;
+    padding: 15px;
+  }
+
+  .register-form {
+    padding: 20px;
+    width: 100%;
+  }
+
+  .register-page h2 {
+    font-size: 1.5rem;
+  }
+
+  .register-form label {
+    font-size: 0.85rem;
+  }
+
+  .register-form input {
+    padding: 8px;
+    font-size: 0.95rem;
+  }
+
+  .btn {
+    padding: 8px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .register-page {
+    margin: 60px 40px;
+    padding: 20px;
+  }
+
+  .register-form {
+    width: 100%;
+    padding: 25px;
+  }
+
+  .register-page h2 {
+    font-size: 1.6rem;
+  }
+
+  .register-form label {
+    font-size: 0.9rem;
+  }
+
+  .register-form input {
+    padding: 9px;
+    font-size: 1rem;
+  }
+
+  .btn {
+    padding: 9px;
+    font-size: 1rem;
+  }
+}
