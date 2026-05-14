@@ -1,140 +1,101 @@
-body {
-  background: linear-gradient(135deg, #fce4ec, #fff0f5);
-  font-family: Arial, sans-serif;
-}
+/* 
+   ================================================
+   PU REGISTER - PREMIUM EDITORIAL DESIGN
+   ================================================
+*/
 
-.register-page {
-  
-  max-width: 400px;
-  margin: 80px auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  background: #ffffff7a;
-  text-align: center;
+@import "./Login.css";
 
-}
-
-.register-page h2 {
-  margin-bottom: 20px;
-  color: #b30000;
-}
-
-.register-form {
-  background: #ffe5e5;
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
-  width: 360px;
+.register-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.register-form label {
-font-size: 0.9rem;
-  font-weight: bold;
-  margin: 8px 0 4px;
-  color: #5a0000;
-  text-align: left; 
-}
-
-.register-form input {
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
   width: 100%;
-  padding: 10px;
+  background: radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.03) 0%, transparent 40%),
+              radial-gradient(circle at 90% 80%, rgba(139, 0, 0, 0.02) 0%, transparent 40%),
+              var(--parchment);
+  padding: 80px 20px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Subtle Watermark for Registration Page */
+.register-container::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px;
+  height: 800px;
+  background-image: url('https://upload.wikimedia.org/wikipedia/en/thumb/0/05/Panjab_University_logo.png/220px-Panjab_University_logo.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.02;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.register-container .register-form {
+  max-width: 900px; /* Wider for 2-column grid */
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  background: var(--white);
+  padding: 60px 50px;
+  box-shadow: 0 40px 100px rgba(15, 23, 42, 0.1);
+}
+
+.register-container .register-title {
+  position: relative;
+  z-index: 1;
+}
+
+/* Section Header Refinement */
+.form-header-section {
+  grid-column: span 2;
   margin-top: 10px;
-  border: 1px solid #aaa;
-  border-radius: 10px;
+  margin-bottom: 15px;
+  border-left: 4px solid var(--crimson-primary);
+  padding-left: 20px;
+  border-bottom: none; /* Cleaner look */
 }
 
-.btn {
-  margin-top: 12px;
-  padding: 10px;
-  border: none;
-  border-radius: 6px;
-  background: #ff4d4d;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
+.form-header-section h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--navy-deep);
+  letter-spacing: 0.5px;
 }
 
-.btn:hover {
-  background: #e60000;
-}
-
-.switch-auth {
-  margin-top: 15px;
+.form-header-section p {
   font-size: 14px;
+  color: var(--text-muted);
+  opacity: 0.8;
 }
 
-.switch-auth .link {
-  color: #5a0000;
-  cursor: pointer;
-  font-weight: bold;
+/* Form Group Spacing */
+.form-group {
+  margin-bottom: 5px;
 }
 
-.switch-auth .link:hover {
-  color: #af0202ff;
-  text-decoration: underline;
-}
-/* 🌐 Responsive design */
-@media (max-width: 480px) {
-  .register-page {
-    margin: 50px 20px;
-    padding: 15px;
-  }
-
-  .register-form {
-    padding: 20px;
-    width: 100%;
-  }
-
-  .register-page h2 {
-    font-size: 1.5rem;
-  }
-
-  .register-form label {
-    font-size: 0.85rem;
-  }
-
-  .register-form input {
-    padding: 8px;
-    font-size: 0.95rem;
-  }
-
-  .btn {
-    padding: 8px;
-    font-size: 0.95rem;
-  }
+.register-btn {
+  margin-top: 30px;
+  padding: 20px;
+  font-size: 17px;
+  letter-spacing: 2px;
 }
 
-@media (min-width: 481px) and (max-width: 768px) {
-  .register-page {
-    margin: 60px 40px;
-    padding: 20px;
+@media (max-width: 900px) {
+  .register-container .register-form {
+    padding: 40px 25px;
+    grid-template-columns: 1fr;
   }
-
-  .register-form {
-    width: 100%;
-    padding: 25px;
-  }
-
-  .register-page h2 {
-    font-size: 1.6rem;
-  }
-
-  .register-form label {
-    font-size: 0.9rem;
-  }
-
-  .register-form input {
-    padding: 9px;
-    font-size: 1rem;
-  }
-
-  .btn {
-    padding: 9px;
-    font-size: 1rem;
+  .form-header-section {
+    grid-column: span 1;
   }
 }
