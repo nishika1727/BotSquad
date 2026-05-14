@@ -1,27 +1,21 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { 
+  FiArrowLeft, FiUser, FiBook, FiHash, 
+  FiMail, FiLock, FiHome, FiLayers, FiClock, FiStar, FiEye, FiEyeOff 
+} from "react-icons/fi";
 import "./register.css";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const form = e.target as HTMLFormElement;
 
-    // Extract values safely
-    const fullName = (form.elements.namedItem("fullName") as HTMLInputElement).value;
-    const batch = (form.elements.namedItem("batch") as HTMLInputElement).value;
-    const department = (form.elements.namedItem("department") as HTMLInputElement).value;
-    const course = (form.elements.namedItem("course") as HTMLInputElement).value;
-    const semester_year = (form.elements.namedItem("semester_year") as HTMLInputElement).value;
-    const program_type = (form.elements.namedItem("program_type") as HTMLInputElement).value;
-    const hostel = (form.elements.namedItem("hostel") as HTMLInputElement).value;
-    const category = (form.elements.namedItem("category") as HTMLInputElement).value;
-
-    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
     const password = (form.elements.namedItem("password") as HTMLInputElement).value;
     const confirmPassword = (form.elements.namedItem("confirmPassword") as HTMLInputElement).value;
 
@@ -30,43 +24,31 @@ const Register: React.FC = () => {
       return;
     }
 
-    setLoading(true);
+    const payload = {
+      fullName: (form.elements.namedItem("fullName") as HTMLInputElement).value,
+      batch: (form.elements.namedItem("batch") as HTMLInputElement).value,
+      department: (form.elements.namedItem("department") as HTMLInputElement).value,
+      course: (form.elements.namedItem("course") as HTMLInputElement).value,
+      semester_year: (form.elements.namedItem("semester_year") as HTMLInputElement).value,
+      program_type: (form.elements.namedItem("program_type") as HTMLInputElement).value,
+      hostel: (form.elements.namedItem("hostel") as HTMLInputElement).value,
+      category: (form.elements.namedItem("category") as HTMLInputElement).value,
+      email: (form.elements.namedItem("email") as HTMLInputElement).value,
+      password: password,
+    };
 
+    setLoading(true);
     try {
       const res = await fetch("http://localhost:5001/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName,
-          batch,
-          department,
-          course,
-          semester_year,
-          program_type,
-          hostel,
-          category,
-          email,
-          password,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
       alert(data.message);
-
-      if (res.ok) {
-        // Save basic data for personalization
-        localStorage.setItem("user_id", email);
-        localStorage.setItem("user_name", fullName);
-        localStorage.setItem("user_department", department);
-        localStorage.setItem("user_batch", batch);
-        localStorage.setItem("user_course", course);
-        localStorage.setItem("user_semester", semester_year);
-        localStorage.setItem("user_program", program_type);
-
-        navigate("/login");
-      }
+      if (res.ok) navigate("/login");
     } catch (err) {
-      console.error(err);
       alert("Registration failed");
     } finally {
       setLoading(false);
@@ -74,77 +56,124 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="register-page">
-      <h2>Student Registration</h2>
+    <div className="register-container">
+      <button className="back-btn-premium" onClick={() => navigate("/")}>
+        <FiArrowLeft /> Back to Home
+      </button>
+      
+      <h2 className="register-title">STUDENT REGISTRATION</h2>
 
       <form className="register-form" onSubmit={handleSubmit}>
         
-        <label>
-          Full Name
-          <input name="fullName" type="text" placeholder="Enter full name" required />
-        </label>
+        {/* Section 1: Academic Identity */}
+        <div className="form-header-section">
+          <h3>Academic Identity</h3>
+          <p>Provide your official department and enrollment credentials.</p>
+        </div>
 
-        <label>
-          Batch
+        <div className="form-group">
+          <label><FiUser /> Full Name</label>
+          <input name="fullName" type="text" placeholder="John Doe" required />
+        </div>
+
+        <div className="form-group">
+          <label><FiHash /> Batch</label>
           <input name="batch" type="text" placeholder="2023–2027" required />
-        </label>
+        </div>
 
-        <label>
-          Department
-          <input name="department" type="text" placeholder="UIET / UBS / UILS" required />
-        </label>
+        <div className="form-group">
+          <label><FiLayers /> Department</label>
+          <input name="department" type="text" placeholder="e.g. UIET" required />
+        </div>
 
-        <label>
-          Course / Programme
-          <input name="course" type="text" placeholder="B.E CSE / MBA / BA LLB" required />
-        </label>
+        <div className="form-group">
+          <label><FiBook /> Course / Programme</label>
+          <input name="course" type="text" placeholder="e.g. B.E CSE" required />
+        </div>
 
-        <label>
-          Semester / Year
-          <input name="semester_year" type="text" placeholder="6th Sem / 3rd Year" required />
-        </label>
+        <div className="form-group">
+          <label><FiClock /> Semester / Year</label>
+          <input name="semester_year" type="text" placeholder="e.g. 6th Sem" required />
+        </div>
 
-        <label>
-          Program Type
-          <input name="program_type" type="text" placeholder="UG / PG / PhD" required />
-        </label>
+        <div className="form-group">
+          <label><FiLayers /> Program Type</label>
+          <input name="program_type" type="text" placeholder="UG / PG" required />
+        </div>
 
-        <label>
-          Hostel (Optional)
-          <input name="hostel" type="text" placeholder="e.g. Boys Hostel 8" />
-        </label>
+        {/* Section 2: Campus Residence */}
+        <div className="form-header-section">
+          <h3>Campus Residence</h3>
+          <p>Optional details for hostel and category services.</p>
+        </div>
 
-        <label>
-          Category (Optional)
-          <input name="category" type="text" placeholder="GEN / OBC / SC" />
-        </label>
+        <div className="form-group">
+          <label><FiHome /> Hostel (Optional)</label>
+          <input name="hostel" type="text" placeholder="e.g. BH8" />
+        </div>
 
-        <label>
-          Email ID
-          <input name="email" type="email" placeholder="Enter email" required />
-        </label>
+        <div className="form-group">
+          <label><FiStar /> Category (Optional)</label>
+          <input name="category" type="text" placeholder="e.g. GEN / OBC" />
+        </div>
 
-        <label>
-          Password
-          <input name="password" type="password" placeholder="Enter password" required />
-        </label>
+        {/* Section 3: Secure Access */}
+        <div className="form-header-section">
+          <h3>Secure Access</h3>
+          <p>Used for official portal authentication and notifications.</p>
+        </div>
 
-        <label>
-          Confirm Password
-          <input name="confirmPassword" type="password" placeholder="Confirm password" required />
-        </label>
+        <div className="form-group full-width">
+          <label><FiMail /> Email ID</label>
+          <input name="email" type="email" placeholder="email@example.com" required />
+        </div>
 
-        <button type="submit" className="btn" disabled={loading}>
-          {loading ? "Registering..." : "Register"}
+        <div className="form-group">
+          <label><FiLock /> Password</label>
+          <div className="password-input-wrapper">
+            <input 
+              name="password" 
+              type={showPassword ? "text" : "password"} 
+              placeholder="Create password" 
+              required 
+            />
+            <button 
+              type="button" 
+              className="password-toggle-btn"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <FiEyeOff /> : <FiEye />}
+            </button>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label><FiLock /> Confirm Password</label>
+          <div className="password-input-wrapper">
+            <input 
+              name="confirmPassword" 
+              type={showConfirmPassword ? "text" : "password"} 
+              placeholder="Repeat password" 
+              required 
+            />
+            <button 
+              type="button" 
+              className="password-toggle-btn"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" className="register-btn" disabled={loading}>
+          {loading ? "INITIALIZING..." : "JOIN THE COMMUNITY"}
         </button>
       </form>
 
-      <p className="switch-auth">
-        Already have an account?{" "}
-        <span className="link" onClick={() => navigate("/login")}>
-          Login
-        </span>
-      </p>
+      <a className="register-link" onClick={() => navigate("/login")} style={{ marginBottom: '80px' }}>
+        Already have an account? <strong>Login Here</strong>
+      </a>
     </div>
   );
 };
