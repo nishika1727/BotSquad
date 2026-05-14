@@ -1,9 +1,11 @@
 import os
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 from llama_index.core import StorageContext, load_index_from_storage
+# pyrefly: ignore [missing-import]
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
@@ -93,27 +95,31 @@ print("✅ Pipeline initialized successfully.")
 # GROQ GENERATION FUNCTION
 # ---------------------------
 def groq_generate(llm, prompt):
+    model_id = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
     try:
         response = llm.chat.completions.create(
-            model="llama3.1-8b-instant",
+            model=model_id,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.1
         )
-        return response.choices[0].message["content"]
+        # Use attribute access or dictionary access depending on library version
+        msg = response.choices[0].message
+        return msg.content if hasattr(msg, 'content') else msg.get('content')
 
     except Exception as e:
-        print("⚠️ GROQ error:", e)
+        print(f"⚠️ GROQ error with model {model_id}:", e)
 
         # fallback: try next API key
         print("🔄 Switching API Key...")
         new_llm = init_llm()
 
         response = new_llm.chat.completions.create(
-            model="llama3.1-8b-instant",
+            model=model_id,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.1
         )
-        return response.choices[0].message["content"]
+        msg = response.choices[0].message
+        return msg.content if hasattr(msg, 'content') else msg.get('content')
 
 
 # ---------------------------
@@ -252,7 +258,7 @@ Follow-Up Suggestions (only after giving a complete answer):
 # FLASK ROUTES
 # ---------------------------
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
+CORS(app, resources={r"/api/*": {"origins": "*"}}) 
 
 
 @app.route("/api/chat", methods=["POST"])

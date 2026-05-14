@@ -1,28 +1,49 @@
+import logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from rag_pipeline import generate_answer   # import from step 1
+from rag_pipeline import generate_answer, pipeline
+
+# --- Logging Configuration ---
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)  # allow frontend to call backend
+# Allow frontend to call backend (Vite default is 5173)
+CORS(app, resources={r"/api/*": {"origins": "*"}}) 
 
 @app.route("/", methods=["GET"])
 def home():
-    return "✅ PU Assistant backend is running!"
+    return jsonify({
+        "status": "online",
+        "message": "✅ PU Assistant backend is running!",
+        "version": "1.0.0"
+    }), 200
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
     data = request.json
+    if not data or 'message' not in data:
+        return jsonify({"error": "Missing 'message' in request body"}), 400
+
     query = data.get('message')
-    print(f"Received query: {query}")
+    logger.info(f"Received query: {query}")
 
     try:
-        answer = generate_answer(query)
-    except Exception as e:
-        print(f"❌ Error: {e}")
-        answer = "Sorry, something went wrong. Please visit the admin office."
+        # Pass the global pipeline object to the generator
+        result = generate_answer(query, pipeline)
+        logger.info(f"Generated answer successfully for query: {query[:50]}...")
+        return jsonify(result), 200
 
-    print(f"Generated answer: {answer}")
-    return jsonify({"reply": answer})
+    except Exception as e:
+        logger.error(f"❌ Error during generation: {e}", exc_info=True)
+        return jsonify({
+            "reply": "Sorry, I encountered an internal error. Please try again later or contact support.",
+            "follow_ups": []
+        }), 500
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    logger.info("Starting PU Assistant Backend on port 5000...")
+    app.run(port=5000, host="0.0.0.0", debug=False)
