@@ -1,0 +1,101 @@
+/* 
+   ================================================
+   PU REGISTER - PREMIUM EDITORIAL DESIGN
+   ================================================
+*/
+
+@import "./Login.css";
+
+.register-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  width: 100%;
+  background: radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.03) 0%, transparent 40%),
+              radial-gradient(circle at 90% 80%, rgba(139, 0, 0, 0.02) 0%, transparent 40%),
+              var(--parchment);
+  padding: 80px 20px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Subtle Watermark for Registration Page */
+.register-container::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px;
+  height: 800px;
+  background-image: url('https://upload.wikimedia.org/wikipedia/en/thumb/0/05/Panjab_University_logo.png/220px-Panjab_University_logo.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.02;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.register-container .register-form {
+  max-width: 900px; /* Wider for 2-column grid */
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  background: var(--white);
+  padding: 60px 50px;
+  box-shadow: 0 40px 100px rgba(15, 23, 42, 0.1);
+}
+
+.register-container .register-title {
+  position: relative;
+  z-index: 1;
+}
+
+/* Section Header Refinement */
+.form-header-section {
+  grid-column: span 2;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  border-left: 4px solid var(--crimson-primary);
+  padding-left: 20px;
+  border-bottom: none; /* Cleaner look */
+}
+
+.form-header-section h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--navy-deep);
+  letter-spacing: 0.5px;
+}
+
+.form-header-section p {
+  font-size: 14px;
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+/* Form Group Spacing */
+.form-group {
+  margin-bottom: 5px;
+}
+
+.register-btn {
+  margin-top: 30px;
+  padding: 20px;
+  font-size: 17px;
+  letter-spacing: 2px;
+}
+
+@media (max-width: 900px) {
+  .register-container .register-form {
+    padding: 40px 25px;
+    grid-template-columns: 1fr;
+  }
+  .form-header-section {
+    grid-column: span 1;
+  }
+}

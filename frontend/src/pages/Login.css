@@ -1,0 +1,268 @@
+/* 
+   ================================================
+   PU LOGIN/REGISTER - CLEAN INDUSTRIAL SPLIT SCREEN
+   ================================================
+*/
+
+:root {
+  --navy-deep: #0F172A;
+  --crimson-primary: #8B0000;
+  --crimson-gradient: linear-gradient(135deg, #8B0000 0%, #A93226 100%);
+  --parchment: #FAF7F2;
+  --text-main: #1A1A2E;
+  --text-muted: #64748B;
+  --white: #FFFFFF;
+  --border-light: #E2D9D0;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.auth-page-wrapper {
+  display: flex;
+  min-height: 100vh;
+  width: 100vw;
+  background-color: var(--parchment);
+  overflow: hidden;
+}
+
+/* LEFT PANEL */
+.auth-left-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  /* Changed to start for better spacing control */
+  padding: 100px 60px;
+  /* More top padding */
+  position: relative;
+  max-width: 50%;
+  background: var(--parchment);
+}
+
+/* BACK BUTTON - Clean Pill */
+.back-btn-premium {
+  position: absolute;
+  top: 40px;
+  left: 60px;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  color: var(--navy-deep);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 22px;
+  border-radius: 99px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+.back-btn-premium:hover {
+  transform: translateX(-5px);
+  border-color: var(--crimson-primary);
+  color: var(--crimson-primary);
+}
+
+/* TITLES */
+.login-title,
+.register-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--navy-deep);
+  margin-top: 40px;
+  /* Space from top/back button */
+  margin-bottom: 40px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* FORM CARD - Clean and Balanced */
+.login-form,
+.register-form {
+  background: var(--white);
+  padding: 50px 40px;
+  border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  border: 1px solid var(--border-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.register-form {
+  max-width: 750px;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+}
+
+.login-form::before,
+.register-form::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--crimson-gradient);
+}
+
+.form-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--navy-deep);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  padding-right: 50px !important; /* Make room for icon */
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  padding: 5px;
+  transition: 0.2s;
+  z-index: 5;
+}
+
+.password-toggle-btn:hover {
+  color: var(--crimson-primary);
+}
+
+.login-form input,
+.register-form input {
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border-light);
+  font-size: 16px;
+  background: var(--white);
+  color: var(--text-main);
+  transition: all 0.3s var(--ease-out);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.login-form input:focus,
+.register-form input:focus {
+  background: white;
+  border-color: var(--crimson-primary);
+  box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.08);
+  outline: none;
+}
+
+.login-btn,
+.register-btn {
+  background: var(--crimson-gradient);
+  color: white;
+  padding: 16px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 10px 20px rgba(139, 0, 0, 0.15);
+  margin-top: 10px;
+}
+
+.login-btn:hover,
+.register-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(139, 0, 0, 0.25);
+}
+
+.register-link {
+  margin-top: 40px;
+  font-size: 14px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.register-link strong {
+  color: var(--crimson-primary);
+}
+
+/* RIGHT PANEL */
+.auth-right-panel {
+  flex: 1;
+  position: relative;
+  background: var(--navy-deep);
+  display: flex;
+  align-items: flex-end;
+  padding: 80px;
+}
+
+.auth-right-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.7;
+}
+
+.auth-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, var(--navy-deep) 0%, transparent 100%);
+  z-index: 1;
+}
+
+.auth-content-box {
+  position: relative;
+  z-index: 2;
+  color: white;
+  max-width: 500px;
+}
+
+.auth-content-box h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 42px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 1024px) {
+  .auth-right-panel {
+    display: none;
+  }
+
+  .auth-left-panel {
+    max-width: 100%;
+    padding: 40px 20px;
+  }
+
+  .back-btn-premium {
+    left: 20px;
+    top: 20px;
+  }
+}

@@ -1,77 +1,153 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify, send_from_directory, session
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+
 from llama_index.core import StorageContext, load_index_from_storage
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.llms.groq import Groq
-from chromadb import PersistentClient
-from llama_index.llms.base import ChatMessage, MessageRole
 
-# Load environment variables
+from groq import Groq
+import chromadb
+from sentence_transformers import CrossEncoder
+from intent_links import intent_to_url
+
+
+# ---------------------------
+# 🔥 LOAD MULTIPLE API KEYS
+# ---------------------------
 load_dotenv()
 
-# Flask App Setup
-app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "supersecretkey")
-CORS(app, supports_credentials=True)
+GROQ_KEYS_RAW = os.getenv("GROQ_API_KEYS", "")
+GROQ_API_KEYS = [k.strip() for k in GROQ_KEYS_RAW.split(",") if k.strip()]
 
-# LLM and Embedding Model Setup
-llm = Groq(model="mixtral-8x7b-32768", api_key=os.getenv("GROQ_API_KEY"))
-embed_model = HuggingFaceEmbedding(model_name="sentence-transformers/all-MiniLM-L6-v2")
+if not GROQ_API_KEYS:
+    raise Exception("❌ No GROQ_API_KEYS found in .env file!")
 
-# Chroma Vector Store Setup
-db = PersistentClient(path="./chroma_db")
-chroma_collection = db.get_or_create_collection("pu_docs")
-vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
-storage_context = StorageContext.from_defaults(vector_store=vector_store)
-index = load_index_from_storage(storage_context, embed_model=embed_model)
+current_key_index = -1
 
-# Intent → Link Mapping
-intent_to_url = {
-    "admission": {
-        "keywords": ["admission", "apply", "application"],
-        "urls": ["https://admissions.puchd.ac.in"]
-    },
-    "prospectus": {
-        "keywords": ["prospectus"],
-        "urls": ["https://admissions.puchd.ac.in/includes/admnpros2024.pdf"]
-    },
-    "hostel": {
-        "keywords": ["hostel"],
-        "urls": ["https://puchd.ac.in/facilities/hostel"]
-    },
-    "fee": {
-        "keywords": ["fee", "fees"],
-        "urls": ["https://dui.puchd.ac.in/syllabus.php"]
+
+def get_next_groq_key():
+    """ Round-robin rotation """
+    global current_key_index
+    current_key_index = (current_key_index + 1) % len(GROQ_API_KEYS)
+    return GROQ_API_KEYS[current_key_index]
+
+
+# ------------------------------------
+# 🔥 Initialize LLM using rotating key
+# ------------------------------------
+def init_llm():
+    api_key = get_next_groq_key()
+    print(f"🔑 Using GROQ Key: {api_key[:6]}*****")
+
+    return Groq(api_key=api_key)
+
+
+# ---------------------------
+# RAG COMPONENT INITIALIZERS
+# ---------------------------
+def init_embed_model():
+    return HuggingFaceEmbedding("sentence-transformers/all-MiniLM-L6-v2")
+
+
+def init_reranker():
+    return CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+
+
+def init_vector_store(persist_dir="./chroma_db", collection_name="rag-collection"):
+    client = chromadb.PersistentClient(path=persist_dir)
+    coll = client.get_or_create_collection(collection_name)
+    return ChromaVectorStore(chroma_collection=coll)
+
+
+def load_index(persist_dir="./chroma_db", index_dir="./index", embed_model=None, vector_store=None):
+    sc = StorageContext.from_defaults(
+        persist_dir=index_dir,
+        vector_store=vector_store
+    )
+    return load_index_from_storage(sc, embed_model=embed_model)
+
+
+def initialize_pipeline():
+    embed = init_embed_model()
+    store = init_vector_store()
+    llm_client = init_llm()
+    index = load_index(embed_model=embed, vector_store=store)
+    reranker = init_reranker()
+
+    return {
+        "llm": llm_client,
+        "embed_model": embed,
+        "vector_store": store,
+        "index": index,
+        "reranker": reranker
     }
+
+
+pipeline = initialize_pipeline()
+print("✅ Pipeline initialized successfully.")
+
+
+# ---------------------------
+# GROQ GENERATION FUNCTION
+# ---------------------------
+def groq_generate(llm, prompt):
+    try:
+        response = llm.chat.completions.create(
+            model="llama3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.1
+        )
+        return response.choices[0].message["content"]
+
+    except Exception as e:
+        print("⚠️ GROQ error:", e)
+
+        # fallback: try next API key
+        print("🔄 Switching API Key...")
+        new_llm = init_llm()
+
+        response = new_llm.chat.completions.create(
+            model="llama3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.1
+        )
+        return response.choices[0].message["content"]
+
+
+# ---------------------------
+# SESSION HANDLING
+# ---------------------------
+session = {
+    "original_query": None,
+    "expecting_clarification": False
 }
 
-pipeline = {"llm": llm, "index": index}
 
 # ---------------------------
-# Main Answer Generator
+# MAIN ANSWER GENERATOR
 # ---------------------------
 def generate_answer(query, pipeline):
+
     llm = pipeline["llm"]
     index = pipeline["index"]
 
     vague_keywords = ["fee", "admission", "form", "hostel", "apply", "scholarship", "process"]
 
-    if session.get("expecting_clarification") and session.get("original_query"):
+    if session["expecting_clarification"] and session["original_query"]:
         query = f"{session['original_query']} for {query}"
         session["original_query"] = None
         session["expecting_clarification"] = False
-    elif any(keyword in query.lower() for keyword in vague_keywords):
+
+    elif any(k in query.lower() for k in vague_keywords):
         session["original_query"] = query
         session["expecting_clarification"] = True
 
-    # Retrieve top 3 similar chunks
     retriever = index.as_retriever(similarity_top_k=3)
     context = "\n\n---\n\n".join(node.get_content() for node in retriever.retrieve(query))
 
-    # Final Prompt to LLM
+    # Prompt preserved as-is (your rules)
     prompt = f"""
 You are PU-Assistant, the official AI helpdesk chatbot of Panjab University, Chandigarh.
 
@@ -156,68 +232,46 @@ Follow-Up Suggestions (only after giving a complete answer):
 *Your Answer:*
 """.strip()
 
-    response = llm.chat(messages=[
-        ChatMessage(role=MessageRole.SYSTEM, content="You are a helpful assistant."),
-        ChatMessage(role=MessageRole.USER, content=prompt)
-    ])
+    try:
+        reply = groq_generate(llm, prompt)
 
-    full_text = response.message.content.strip()
-    answer_main = full_text
-    follow_ups = []
-
-    if "Know more about:" in full_text:
-        parts = full_text.split("Know more about:")
-        answer_main = parts[0].strip()
-        follow_lines = parts[1].strip().splitlines()
-        follow_ups = [line.replace("-", "").strip() for line in follow_lines if line.strip()]
-
-    query_lower = query.lower()
-    friendly_label = None
-    pdf_url = None
-    detected_link = None
-
-    for intent, data in intent_to_url.items():
-        keywords = data.get("keywords", [])
-        urls = data.get("urls", [])
-        if any(keyword in query_lower for keyword in keywords):
-            detected_link = urls[0] if isinstance(urls, list) else urls
-            break
-
-    if "fee" in query_lower and "pdf" not in answer_main.lower():
-        pdf_url = "http://127.0.0.1:5000/files/pu_fee_structure.pdf"
-        friendly_label = f"\n\n📄 [Download official fee PDF here]({pdf_url})"
-    elif detected_link and detected_link not in answer_main:
-        if "admission" in query_lower or "apply" in query_lower:
-            friendly_label = f"\n\n🔗 [Apply here]({detected_link})"
-        elif "prospectus" in query_lower:
-            friendly_label = f"\n\n📄 [View official prospectus]({detected_link})"
-        elif "hostel" in query_lower:
-            friendly_label = f"\n\n🏨 [Hostel Info]({detected_link})"
+    except Exception as e:
+        print("❌ Fatal Groq Error:", e)
+        return {
+            "reply": "⚠️ Server error, please try again later.",
+            "follow_ups": []
+        }
 
     return {
-        "answer": answer_main,
-        "follow_ups": follow_ups,
-        "pdf_url": pdf_url,
-        "link": friendly_label
+        "reply": reply,
+        "follow_ups": ["Scholarships", "Hostels", "Campus Life"]
     }
 
-# ---------------------------
-# API Routes
-# ---------------------------
 
-@app.route("/query", methods=["POST"])
-def query():
+# ---------------------------
+# FLASK ROUTES
+# ---------------------------
+app = Flask(__name__)
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
+
+
+@app.route("/api/chat", methods=["POST"])
+def chat():
     data = request.get_json()
-    user_query = data.get("query")
-    result = generate_answer(user_query, pipeline)
+    query = data.get("message", "")
+    result = generate_answer(query, pipeline)
     return jsonify(result)
 
+
 @app.route("/files/<path:filename>")
-def serve_file(filename):
+def download_file(filename):
     return send_from_directory("static", filename)
 
-# ---------------------------
-# Run Flask App
-# ---------------------------
+
+@app.route("/healthz")
+def health():
+    return "OK", 200
+
+
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(port=5000, host="0.0.0.0", debug=True)
