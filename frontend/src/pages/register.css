@@ -99,3 +99,44 @@
     grid-column: span 1;
   }
 }
+
+@media (max-width: 576px) {
+  .register-container {
+    padding: 90px 12px 40px 12px;
+  }
+
+  .register-container::after {
+    display: none; /* Hide watermark on small mobile screens to keep UI clean and highly readable */
+  }
+
+  .register-container .register-form {
+    padding: 30px 16px;
+    gap: 15px;
+  }
+
+  .form-header-section {
+    padding-left: 12px;
+    margin-top: 5px;
+    margin-bottom: 8px;
+  }
+
+  .form-header-section h3 {
+    font-size: 19px;
+  }
+
+  .form-header-section p {
+    font-size: 12px;
+  }
+
+  .register-btn {
+    margin-top: 15px;
+    padding: 14px;
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+  
+  .register-link {
+    margin-top: 25px;
+    font-size: 13px;
+  }
+}

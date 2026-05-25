@@ -9,7 +9,9 @@ import {
   FiSettings,
   FiMessageSquare,
   FiClock,
-  FiPlus} from "react-icons/fi";
+  FiPlus,
+  FiMenu,
+  FiX} from "react-icons/fi";
 import "./index.css";
 
 /* ── Types ───────────────────────────────────────── */
@@ -76,6 +78,7 @@ const App = () => {
   const [sessions,     setSessions]     = useState<ChatSession[]>(loadSessions);
   const [input,        setInput]        = useState("");
   const [firstScreen,  setFirstScreen]  = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isTyping,     setIsTyping]     = useState(false);
   const [isRecording,  setIsRecording]  = useState(false);
 
@@ -217,10 +220,19 @@ const App = () => {
      RENDER
      ════════════════════════════════════════════════ */
   return (
-    <div className="chatpage-container">
+    <div className={`chatpage-container ${isSidebarOpen ? "sidebar-open" : ""}`}>
+
+      {/* Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />
+      )}
 
       {/* ── LEFT SIDEBAR ── */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
+        {/* Mobile Sidebar Close Button */}
+        <button className="sidebar-close-btn" onClick={() => setIsSidebarOpen(false)} title="Close Menu">
+          <FiX />
+        </button>
         <img src="/pu-logo.png" className="sidebar-logo" alt="PU Logo" />
         <h2 className="sidebar-title">PU AI Assistant</h2>
         <div className="sidebar-divider" />
@@ -291,6 +303,9 @@ const App = () => {
       <main className="right-area">
         <header className="chat-header">
           <div className="header-status">
+            <button className="menu-toggle-btn" onClick={() => setIsSidebarOpen(true)} title="Open Menu">
+              <FiMenu />
+            </button>
             <div className="online-dot" />
             <span className="header-title">PU AI Assistant</span>
           </div>

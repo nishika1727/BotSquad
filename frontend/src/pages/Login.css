@@ -266,3 +266,42 @@
     top: 20px;
   }
 }
+
+@media (max-width: 576px) {
+  .auth-left-panel {
+    padding: 90px 16px 40px 16px;
+  }
+  
+  .back-btn-premium {
+    top: 25px;
+    left: 16px;
+    padding: 8px 16px;
+    font-size: 11px;
+  }
+
+  .login-title,
+  .register-title {
+    font-size: 26px;
+    margin-top: 20px;
+    margin-bottom: 30px;
+  }
+
+  .login-form,
+  .register-form {
+    padding: 30px 18px;
+    border-radius: 16px;
+    gap: 20px;
+  }
+
+  .login-form input,
+  .register-form input {
+    padding: 13px 16px;
+    font-size: 15px;
+  }
+
+  .login-btn,
+  .register-btn {
+    padding: 14px;
+    font-size: 14px;
+  }
+}

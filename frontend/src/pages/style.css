@@ -460,3 +460,109 @@ footer {
   .navbar { padding: 20px 30px; }
   .hero-main { padding: 0 30px; }
 }
+
+@media (max-width: 768px) {
+  /* Navbar */
+  .navbar {
+    padding: 15px 20px;
+  }
+  .nav-left {
+    font-size: 19px;
+    gap: 8px;
+  }
+  .nav-logo-small {
+    height: 32px;
+  }
+  .login-btn {
+    padding: 8px 18px;
+    font-size: 12px;
+  }
+
+  /* Hero Section */
+  .hero-container {
+    padding-top: 90px;
+  }
+  .hero-main {
+    padding: 0 20px;
+    gap: 30px;
+  }
+  .hero-title {
+    font-size: 38px;
+    line-height: 1.15;
+    margin-bottom: 20px;
+  }
+  .hero-text {
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    padding-left: 0;
+    border-left: none;
+  }
+  .start-btn {
+    padding: 16px 36px;
+    font-size: 15px;
+    margin: 0 auto; /* Center button on mobile */
+  }
+  .start-btn:hover {
+    padding-right: 46px;
+  }
+  .start-btn::before {
+    right: 18px;
+  }
+  .hero-logo {
+    width: 200px;
+  }
+
+  /* Stats Section - 2x2 Grid is much more premium on mobile than vertical stacking */
+  .stats-section {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px 15px;
+    padding: 35px 15px;
+    margin: 0 15px;
+    border-radius: 24px;
+  }
+  .stat-item h4 {
+    font-size: 36px;
+    margin-bottom: 6px;
+    letter-spacing: -1px;
+  }
+  .stat-item p {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+  }
+
+  /* Features Section */
+  .features-section {
+    padding: 60px 16px;
+  }
+  .section-title {
+    font-size: 30px;
+    margin-bottom: 45px;
+  }
+  .feature-grid {
+    gap: 20px;
+  }
+  .feature-card {
+    padding: 32px 24px;
+    border-radius: 24px;
+  }
+  .feature-icon {
+    font-size: 32px;
+    margin-bottom: 20px;
+  }
+  .feature-card h5 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  .feature-card p {
+    font-size: 14px;
+  }
+
+  /* Footer */
+  footer {
+    padding: 40px 20px;
+    margin-top: 60px;
+    font-size: 12px;
+  }
+}

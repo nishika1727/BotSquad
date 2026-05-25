@@ -685,3 +685,195 @@ body {
   max-width: 500px;
   line-height: 1.6;
 }
+
+/* Close button and Menu Toggle button defaults (Desktop) */
+.sidebar-close-btn {
+  display: none;
+}
+
+.menu-toggle-btn {
+  display: none;
+}
+
+/* ══════════════════════════════════════
+   MOBILE RESPONSIVE OVERRIDES (max-width: 768px)
+   ══════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Toggle buttons and overlay */
+  .menu-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--navy-deep);
+    font-size: 24px;
+    cursor: pointer;
+    margin-right: 12px;
+    padding: 4px;
+    transition: var(--transition-main);
+  }
+  .menu-toggle-btn:hover {
+    color: var(--crimson-primary);
+  }
+
+  .sidebar-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--white);
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 1001;
+    transition: var(--transition-main);
+  }
+  .sidebar-close-btn:hover {
+    background: var(--crimson-primary);
+    transform: rotate(90deg);
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 999;
+    animation: overlayFadeIn 0.3s ease-out;
+  }
+  @keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Sidebar Drawer styling */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 290px;
+    max-width: 85vw;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+    padding: 40px 20px 20px 20px;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Chat Header tweaks */
+  .chat-header {
+    padding: 0 16px;
+    height: 60px;
+  }
+  .header-title {
+    font-size: 16px;
+  }
+
+  /* Chat Body adjustments */
+  .chat-body {
+    padding: 20px 12px 140px 12px;
+  }
+
+  /* Message row and bubble spacing to make room for absolute avatars */
+  .msg-row.bot {
+    align-items: flex-start;
+    padding-left: 32px;
+  }
+  .msg-row.user {
+    align-items: flex-end;
+    padding-right: 32px;
+  }
+
+  .msg-bubble.bot,
+  .msg-bubble.user {
+    max-width: 100%;
+    font-size: 14px;
+    padding: 14px 18px;
+  }
+
+  .ai-avatar {
+    width: 22px;
+    height: 22px;
+    left: -28px;
+    top: 2px;
+  }
+  .user-avatar-circle {
+    width: 22px;
+    height: 22px;
+    right: -28px;
+    top: 2px;
+    font-size: 9px;
+  }
+
+  /* Suggestion chips sizing */
+  .suggestion-row {
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .suggestion-chip {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  /* Quick Topics formatting */
+  .quick-topics-row {
+    padding: 0 4px 10px 4px;
+    gap: 8px;
+  }
+  .topic-pill {
+    padding: 5px 12px;
+    font-size: 11px;
+  }
+
+  /* Floating input layout */
+  .chat-input-area {
+    padding: 10px 12px 15px 12px;
+  }
+  .input-container {
+    height: 50px;
+    padding: 0 8px 0 16px;
+  }
+  .chat-input {
+    font-size: 14px;
+  }
+  .icon-btn {
+    font-size: 18px;
+  }
+  .send-btn-premium {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Empty state landing adjustments */
+  .landing-view {
+    padding: 20px 16px;
+  }
+  .landing-logo {
+    width: 90px;
+    margin-bottom: 20px;
+  }
+  .landing-title {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  .landing-subtitle {
+    font-size: 13px;
+    max-width: 90%;
+  }
+  
+  .pdf-btn {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+}
