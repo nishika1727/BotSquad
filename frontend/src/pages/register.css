@@ -4,16 +4,6 @@
    ================================================
 */
 
-<<<<<<< HEAD
-@import "./Login.css";
-
-.register-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 100vh;
-=======
 .register-page {
   width: 100%;
   max-width: 400px;
@@ -54,7 +44,6 @@ font-size: 0.9rem;
 }
 
 .register-form input {
->>>>>>> 2c42db71b (make changes in responsive side)
   width: 100%;
   background: radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.03) 0%, transparent 40%),
               radial-gradient(circle at 90% 80%, rgba(139, 0, 0, 0.02) 0%, transparent 40%),
@@ -126,13 +115,6 @@ font-size: 0.9rem;
   margin-bottom: 5px;
 }
 
-<<<<<<< HEAD
-.register-btn {
-  margin-top: 30px;
-  padding: 20px;
-  font-size: 17px;
-  letter-spacing: 2px;
-=======
 .switch-auth .link:hover {
   color: #af0202ff;
   text-decoration: underline;
@@ -175,7 +157,6 @@ font-size: 0.9rem;
     font-size: 1rem;
     margin-top: 15px;
   }
->>>>>>> 2c42db71b (make changes in responsive side)
 }
 
 @media (max-width: 900px) {

@@ -1,10 +1,6 @@
 import { useNavigate } from "react-router-dom";
-<<<<<<< HEAD
 import React, { useEffect, useState, useRef } from "react";
 import { FiCpu, FiBookOpen, FiActivity, FiGlobe, FiShield, FiTrendingUp } from "react-icons/fi";
-=======
-import { useEffect, useState } from "react";
->>>>>>> 2c42db71b (make changes in responsive side)
 import "./style.css";
 
 /* ════════════════════════════════════════
@@ -296,7 +292,6 @@ const Home: React.FC = () => {
         </div>
       </header>
 
-<<<<<<< HEAD
       {/* Hero */}
       <section className="hero-container">
         <main className="hero-main">
@@ -318,15 +313,6 @@ const Home: React.FC = () => {
           </div>
         </main>
       </section>
-=======
-      {/* ✅ Hero Section */}
-      <main className="hero">
-        <div className="hero-left">
-          <h1 className="hero-title">CHATBOT</h1>
-          <p className="hero-text">
-            Your intelligent AI assistant for Panjab University delivering accurate, verified, and student-friendly answers about admissions, courses, fees, hostels, scholarships, and campus life all in one place.
-          </p>
->>>>>>> 2c42db71b (make changes in responsive side)
 
       {/* Stats */}
       <section className="stats-section">
