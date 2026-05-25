@@ -50,4 +50,10 @@ streamlit run app.py
 | 5    | Chatbot development and Streamlit interface integration     |
 | 6    | Final testing, documentation, demo upload, and presentation prep |
 
+<h2>Screenshots</h2>
 
+<img src="test/image_2026-05-25_16-32-03.png" width="700">
+
+<img src="test/image_2026-05-25_16-33-08.png" width="700">
+
+<img src="test/image_2026-05-25_16-33-52.png" width="700">
