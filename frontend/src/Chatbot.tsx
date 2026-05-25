@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import {
   FiSend,
   FiPaperclip,
   FiMic,
+  FiMicOff,
   FiTrash2,
   FiDownload,
   FiSettings,
@@ -12,7 +13,15 @@ import {
   FiPlus,
   FiMenu, 
   FiX,
-  FiHome} from "react-icons/fi";
+  FiHome,
+  FiMoon,
+  FiSun,
+  FiType,
+  FiVolume2,
+  FiVolumeX,
+  FiZap,
+  FiArrowDown,
+  FiAlertTriangle} from "react-icons/fi";
 import "./index.css";
 
 /* ── Types ───────────────────────────────────────── */
@@ -34,6 +43,16 @@ type ChatSession = {
   messages: Message[];
 };
 
+type Settings = {
+  darkMode: boolean;
+  fontSize: 'small' | 'medium' | 'large';
+  bubbleStyle: 'modern' | 'classic' | 'minimal';
+  sendOnEnter: boolean;
+  soundEffects: boolean;
+  messageAnimations: boolean;
+  autoScroll: boolean;
+};
+
 /* ── Storage Helpers ─────────────────────────────── */
 const STORAGE_KEY  = "pu_chat_sessions";
 const MAX_SESSIONS = 20;
@@ -48,6 +67,30 @@ const loadSessions = (): ChatSession[] => {
 
 const persistSessions = (sessions: ChatSession[]) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions.slice(0, MAX_SESSIONS)));
+};
+
+/* ── Settings Helpers ───────────────────────────── */
+const SETTINGS_KEY = "pu_settings";
+const DEFAULT_SETTINGS: Settings = {
+  darkMode: false,
+  fontSize: 'medium',
+  bubbleStyle: 'modern',
+  sendOnEnter: true,
+  soundEffects: true,
+  messageAnimations: true,
+  autoScroll: true,
+};
+
+const loadSettings = (): Settings => {
+  try {
+    return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") };
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
+};
+
+const persistSettings = (s: Settings) => {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
 };
 
 /* ── Date Helper ─────────────────────────────────── */
@@ -81,10 +124,14 @@ const App = () => {
   const [firstScreen, setFirstScreen] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [interimTranscript, setInterimTranscript] = useState("");
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [settings, setSettings] = useState<Settings>(loadSettings);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const chatBodyRef = useRef<HTMLDivElement>(null);
   const currentSessionId = useRef<string | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   const profile = {
     full_name:  localStorage.getItem("user_name"),
@@ -96,8 +143,211 @@ const App = () => {
 
   /* Auto-scroll on new messages */
   useEffect(() => {
-    chatBodyRef.current?.scrollTo({ top: chatBodyRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, isTyping]);
+    if (settings.autoScroll) {
+      chatBodyRef.current?.scrollTo({ top: chatBodyRef.current.scrollHeight, behavior: "smooth" });
+    }
+  }, [messages, isTyping, settings.autoScroll]);
+
+  /* Apply settings to DOM */
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle('dark-mode', settings.darkMode);
+    root.classList.remove('font-small', 'font-medium', 'font-large');
+    root.classList.add(`font-${settings.fontSize}`);
+    root.classList.remove('bubble-modern', 'bubble-classic', 'bubble-minimal');
+    root.classList.add(`bubble-${settings.bubbleStyle}`);
+    root.classList.toggle('no-animations', !settings.messageAnimations);
+  }, [settings]);
+
+  /* Cleanup speech recognition on unmount */
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+        recognitionRef.current = null;
+      }
+    };
+  }, []);
+
+  /* Settings update helper */
+  const updateSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => {
+    setSettings(prev => {
+      const next = { ...prev, [key]: value };
+      persistSettings(next);
+      return next;
+    });
+  };
+
+  /* ── Voice Input (Web Speech API) ────────────── */
+  const [voiceToast, setVoiceToast] = useState<string | null>(null);
+  const [voiceLang, setVoiceLang] = useState<"en" | "hi">("en");
+  const [isTranslating, setIsTranslating] = useState(false);
+  const voiceToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showVoiceToast = useCallback((msg: string) => {
+    setVoiceToast(msg);
+    if (voiceToastTimer.current) clearTimeout(voiceToastTimer.current);
+    voiceToastTimer.current = setTimeout(() => setVoiceToast(null), 4000);
+  }, []);
+
+  /* Translate Hindi text to English using MyMemory API (free, no key needed) */
+  const translateToEnglish = useCallback(async (hindiText: string): Promise<string> => {
+    try {
+      setIsTranslating(true);
+      const encoded = encodeURIComponent(hindiText);
+      const res = await fetch(
+        `https://api.mymemory.translated.net/get?q=${encoded}&langpair=hi|en`
+      );
+      const data = await res.json();
+      if (data.responseStatus === 200 && data.responseData?.translatedText) {
+        return data.responseData.translatedText;
+      }
+      /* Fallback: return original Hindi if translation fails */
+      showVoiceToast("Translation failed. Showing original Hindi text.");
+      return hindiText;
+    } catch (err) {
+      console.warn("Translation error:", err);
+      showVoiceToast("Could not translate. Showing original Hindi text.");
+      return hindiText;
+    } finally {
+      setIsTranslating(false);
+    }
+  }, [showVoiceToast]);
+
+  const toggleVoiceInput = useCallback(() => {
+    /* If already recording → stop */
+    if (isRecording && recognitionRef.current) {
+      recognitionRef.current.stop();
+      return;
+    }
+
+    /* Check browser support */
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      showVoiceToast("Voice input is not supported in this browser. Use Chrome, Edge or Safari.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+
+    /* Set language based on user's selection */
+    const isHindi = voiceLang === "hi";
+    recognition.lang = isHindi ? "hi-IN" : "en-IN";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    if (isHindi) {
+      showVoiceToast("Hindi mode: Speak in Hindi — it will be translated to English.");
+    }
+
+    let finalTranscript = "";
+
+    recognition.onstart = () => {
+      setIsRecording(true);
+      setInterimTranscript("");
+      finalTranscript = "";
+    };
+
+    recognition.onresult = (event: any) => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript;
+        } else {
+          interim += transcript;
+        }
+      }
+      /* Show interim in input for real-time feedback */
+      setInterimTranscript(interim);
+      if (finalTranscript) {
+        setInput(finalTranscript);
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      console.warn("Speech recognition error:", event.error);
+      setIsRecording(false);
+      setInterimTranscript("");
+      recognitionRef.current = null;
+
+      switch (event.error) {
+        case "not-allowed":
+          showVoiceToast("Microphone access denied. Please allow mic permission in browser settings.");
+          break;
+        case "no-speech":
+          showVoiceToast("No speech detected. Tap the mic and try speaking again.");
+          break;
+        case "network":
+          showVoiceToast("Network unavailable. Please check your internet connection and try again.");
+          break;
+        case "aborted":
+          break;
+        default:
+          showVoiceToast("Voice input failed. Please try again.");
+          break;
+      }
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+      setInterimTranscript("");
+      recognitionRef.current = null;
+
+      /* If Hindi mode → translate the final transcript to English */
+      if (isHindi && finalTranscript.trim()) {
+        setInput(finalTranscript.trim()); // Show Hindi temporarily
+        translateToEnglish(finalTranscript.trim()).then(english => {
+          setInput(english);
+        });
+      } else if (finalTranscript.trim()) {
+        setInput(finalTranscript.trim());
+      }
+    };
+
+    /* Start listening */
+    try {
+      recognition.start();
+    } catch (err) {
+      console.error("Failed to start speech recognition:", err);
+      setIsRecording(false);
+      showVoiceToast("Could not start voice input. Please try again.");
+    }
+  }, [isRecording, voiceLang, showVoiceToast, translateToEnglish]);
+
+  /* Play subtle send sound using Web Audio API */
+  const playSendSound = () => {
+    if (!settings.soundEffects) return;
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.12);
+    } catch {}
+  };
+
+  /* Clear all history */
+  const clearAllHistory = () => {
+    if (!window.confirm("⚠️ This will permanently delete ALL chat history. Continue?")) return;
+    setSessions([]);
+    localStorage.removeItem(STORAGE_KEY);
+    setMessages([]);
+    setFirstScreen(true);
+    currentSessionId.current = null;
+    setIsSettingsOpen(false);
+  };
 
   /* Auto-save current session on every message change */
   useEffect(() => {
@@ -138,6 +388,7 @@ const App = () => {
     setMessages(prev => [...prev, { role: "user", text: textToSend, time: nowTime }]);
     setInput("");
     setIsTyping(true);
+    playSendSound();
 
     try {
       const res  = await fetch(BACKEND_URL, {
@@ -336,7 +587,7 @@ const App = () => {
           <div className="header-actions">
             <button className="action-btn" onClick={clearChat} title="New Chat"><FiTrash2 /></button>
             <button className="action-btn" onClick={exportChat} title="Export Chat"><FiDownload /></button>
-            <button className="action-btn" title="Settings"><FiSettings /></button>
+            <button className="action-btn" title="Settings" onClick={() => setIsSettingsOpen(!isSettingsOpen)}><FiSettings /></button>
           </div>
         </header>
 
@@ -428,22 +679,217 @@ const App = () => {
             <button className="icon-btn"><FiPaperclip /></button>
             <input
               className="chat-input"
-              placeholder="Ask anything about Panjab University..."
-              value={input}
+              placeholder={
+                isTranslating ? "Translating to English..."
+                : isRecording && voiceLang === "hi" ? "🎙️ हिंदी सुन रहा है..."
+                : isRecording ? "🎙️ Listening..."
+                : "Ask anything about Panjab University..."
+              }
+              value={isRecording && interimTranscript ? (input ? input + " " : "") + interimTranscript : input}
               onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleSend()}
+              onKeyDown={e => settings.sendOnEnter && e.key === "Enter" && !isTranslating && handleSend()}
+              readOnly={isRecording || isTranslating}
             />
             <div className="input-actions">
               <button
-                className={`icon-btn ${isRecording ? "recording-pulse" : ""}`}
-                onClick={() => setIsRecording(!isRecording)}
-                title={isRecording ? "Stop Recording" : "Voice Input"}
+                className={`voice-lang-toggle ${voiceLang === "hi" ? "active" : ""}`}
+                onClick={() => setVoiceLang(prev => prev === "en" ? "hi" : "en")}
+                title={voiceLang === "en" ? "Switch to Hindi voice (translate to English)" : "Switch to English voice"}
+                aria-label="Toggle voice language"
               >
-                <FiMic />
+                {voiceLang === "hi" ? "हि" : "En"}
               </button>
-              <button className="send-btn-premium" onClick={() => handleSend()}>
+              <button
+                className={`icon-btn ${isRecording ? "recording-pulse" : ""}`}
+                onClick={toggleVoiceInput}
+                title={isRecording ? "Stop Recording" : `Voice Input (${voiceLang === "hi" ? "Hindi → English" : "English"})`}
+                aria-label={isRecording ? "Stop voice recording" : "Start voice input"}
+              >
+                {isRecording ? <FiMicOff /> : <FiMic />}
+              </button>
+              <button className="send-btn-premium" onClick={() => handleSend()} disabled={isTranslating}>
                 <FiSend />
               </button>
+            </div>
+          </div>
+        </div>
+        {/* VOICE TOAST NOTIFICATION */}
+        {voiceToast && (
+          <div className="voice-toast" role="alert">
+            <span className="voice-toast-icon">🎙️</span>
+            <span className="voice-toast-text">{voiceToast}</span>
+            <button className="voice-toast-close" onClick={() => setVoiceToast(null)}>×</button>
+          </div>
+        )}
+        {/* SETTINGS PANEL */}
+        {isSettingsOpen && (
+          <div className="settings-backdrop" onClick={() => setIsSettingsOpen(false)} />
+        )}
+        <div className={`settings-panel ${isSettingsOpen ? 'open' : ''}`}>
+          <div className="settings-header">
+            <h3 className="settings-title">
+              <FiSettings className="settings-title-icon" /> Settings
+            </h3>
+            <button className="settings-close-btn" onClick={() => setIsSettingsOpen(false)}>
+              <FiX />
+            </button>
+          </div>
+
+          <div className="settings-body">
+            {/* ── Appearance ── */}
+            <div className="settings-section">
+              <h4 className="settings-section-title">🎨 Appearance</h4>
+
+              <div className="settings-item">
+                <div className="settings-item-info">
+                  {settings.darkMode ? <FiMoon className="settings-icon" /> : <FiSun className="settings-icon" />}
+                  <div>
+                    <p className="settings-label">Dark Mode</p>
+                    <p className="settings-desc">Easy on the eyes at night</p>
+                  </div>
+                </div>
+                <label className="toggle-switch">
+                  <input type="checkbox" checked={settings.darkMode} onChange={() => updateSetting('darkMode', !settings.darkMode)} />
+                  <span className="toggle-slider" />
+                </label>
+              </div>
+
+              <div className="settings-item">
+                <div className="settings-item-info">
+                  <FiType className="settings-icon" />
+                  <div>
+                    <p className="settings-label">Font Size</p>
+                    <p className="settings-desc">Adjust chat text size</p>
+                  </div>
+                </div>
+                <div className="font-size-selector">
+                  {(['small', 'medium', 'large'] as const).map(size => (
+                    <button
+                      key={size}
+                      className={`font-size-btn ${settings.fontSize === size ? 'active' : ''}`}
+                      onClick={() => updateSetting('fontSize', size)}
+                    >
+                      <span style={{ fontSize: size === 'small' ? '11px' : size === 'medium' ? '14px' : '18px', fontWeight: 700 }}>A</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="settings-item">
+                <div className="settings-item-info">
+                  <FiMessageSquare className="settings-icon" />
+                  <div>
+                    <p className="settings-label">Bubble Style</p>
+                    <p className="settings-desc">Change chat bubble look</p>
+                  </div>
+                </div>
+                <div className="bubble-style-selector">
+                  {(['modern', 'classic', 'minimal'] as const).map(style => (
+                    <button
+                      key={style}
+                      className={`bubble-style-btn ${settings.bubbleStyle === style ? 'active' : ''}`}
+                      onClick={() => updateSetting('bubbleStyle', style)}
+                    >
+                      {style.charAt(0).toUpperCase() + style.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* ── Behavior ── */}
+            <div className="settings-section">
+              <h4 className="settings-section-title">⚡ Behavior</h4>
+
+              <div className="settings-item">
+                <div className="settings-item-info">
+                  <FiSend className="settings-icon" />
+                  <div>
+                    <p className="settings-label">Send on Enter</p>
+                    <p className="settings-desc">Press Enter to send message</p>
+                  </div>
+                </div>
+                <label className="toggle-switch">
+                  <input type="checkbox" checked={settings.sendOnEnter} onChange={() => updateSetting('sendOnEnter', !settings.sendOnEnter)} />
+                  <span className="toggle-slider" />
+                </label>
+              </div>
+
+              <div className="settings-item">
+                <div className="settings-item-info">
+                  {settings.soundEffects ? <FiVolume2 className="settings-icon" /> : <FiVolumeX className="settings-icon" />}
+                  <div>
+                    <p className="settings-label">Sound Effects</p>
+                    <p className="settings-desc">Play sound when sending</p>
+                  </div>
+                </div>
+                <label className="toggle-switch">
+                  <input type="checkbox" checked={settings.soundEffects} onChange={() => updateSetting('soundEffects', !settings.soundEffects)} />
+                  <span className="toggle-slider" />
+                </label>
+              </div>
+
+              <div className="settings-item">
+                <div className="settings-item-info">
+                  <FiZap className="settings-icon" />
+                  <div>
+                    <p className="settings-label">Animations</p>
+                    <p className="settings-desc">Smooth message transitions</p>
+                  </div>
+                </div>
+                <label className="toggle-switch">
+                  <input type="checkbox" checked={settings.messageAnimations} onChange={() => updateSetting('messageAnimations', !settings.messageAnimations)} />
+                  <span className="toggle-slider" />
+                </label>
+              </div>
+
+              <div className="settings-item">
+                <div className="settings-item-info">
+                  <FiArrowDown className="settings-icon" />
+                  <div>
+                    <p className="settings-label">Auto-Scroll</p>
+                    <p className="settings-desc">Scroll to latest messages</p>
+                  </div>
+                </div>
+                <label className="toggle-switch">
+                  <input type="checkbox" checked={settings.autoScroll} onChange={() => updateSetting('autoScroll', !settings.autoScroll)} />
+                  <span className="toggle-slider" />
+                </label>
+              </div>
+            </div>
+
+            {/* ── Data Management ── */}
+            <div className="settings-section settings-danger-zone">
+              <h4 className="settings-section-title">🗑️ Data Management</h4>
+
+              <div className="settings-item">
+                <div className="settings-item-info">
+                  <FiDownload className="settings-icon" />
+                  <div>
+                    <p className="settings-label">Export All Data</p>
+                    <p className="settings-desc">Download your chat history</p>
+                  </div>
+                </div>
+                <button className="settings-action-btn" onClick={exportChat}>Export</button>
+              </div>
+
+              <div className="settings-item">
+                <div className="settings-item-info">
+                  <FiAlertTriangle className="settings-icon danger" />
+                  <div>
+                    <p className="settings-label danger">Clear All History</p>
+                    <p className="settings-desc">Permanently delete everything</p>
+                  </div>
+                </div>
+                <button className="settings-action-btn danger" onClick={clearAllHistory}>Clear</button>
+              </div>
+            </div>
+
+            {/* ── About ── */}
+            <div className="settings-about">
+              <p>PU AI Assistant v1.2.0</p>
+              <p>Panjab University Official</p>
+              <p className="settings-about-sub">Made with ❤️ for PU students</p>
             </div>
           </div>
         </div>

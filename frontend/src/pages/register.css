@@ -43,7 +43,7 @@ font-size: 0.9rem;
   text-align: left; 
 }
 
-.register-form input {
+.register-container {
   width: 100%;
   background: radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.03) 0%, transparent 40%),
               radial-gradient(circle at 90% 80%, rgba(139, 0, 0, 0.02) 0%, transparent 40%),
@@ -51,6 +51,25 @@ font-size: 0.9rem;
   padding: 80px 20px;
   position: relative;
   overflow-x: hidden;
+}
+
+.register-form input {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border-light);
+  font-size: 15px;
+  background: var(--white);
+  color: var(--text-main);
+  transition: all 0.3s var(--ease-out);
+  box-sizing: border-box;
+}
+
+.register-form input:focus {
+  background: white;
+  border-color: var(--crimson-primary);
+  box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.08);
+  outline: none;
 }
 
 /* Subtle Watermark for Registration Page */

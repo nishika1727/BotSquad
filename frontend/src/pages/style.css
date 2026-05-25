@@ -321,6 +321,10 @@ footer {
     font-size: 15px;
   }
 
+  .hero-main {
+    padding: 0 20px;
+  }
+
   .hero {
     padding: 60px 20px;
   }
@@ -328,6 +332,9 @@ footer {
   .hero-title {
     font-size: 38px;
     margin-bottom: 16px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
 
   .hero-text {
@@ -335,6 +342,8 @@ footer {
     margin-bottom: 24px;
     margin-left: auto;
     margin-right: auto;
+    padding-left: 20px;
+    max-width: 100%;
   }
 
   .start-btn {
@@ -364,16 +373,24 @@ footer {
     font-size: 14px;
   }
 
+  .hero-main {
+    padding: 0 16px;
+  }
+
   .hero {
     padding: 40px 16px;
   }
 
   .hero-title {
     font-size: 28px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   .hero-text {
     font-size: 14px;
+    padding-left: 16px;
+    max-width: 100%;
   }
 
   .hero-right .hero-logo {
@@ -610,10 +627,20 @@ footer {
 }
 
 @media (max-width: 1100px) {
-  .hero-main { flex-direction: column; text-align: center; }
+  .hero-main { flex-direction: column; text-align: center; padding: 0 30px; }
   .feature-grid { grid-template-columns: 1fr; }
   .stats-section { flex-direction: column; gap: 50px; margin: 0 20px; }
   .hero-logo { width: 300px; }
   .navbar { padding: 20px 30px; }
-  .hero-main { padding: 0 30px; }
+  .features-section { padding: 80px 30px; }
+  footer { padding: 40px 20px; }
+
+  .hero-title {
+    font-size: 52px;
+  }
+
+  .hero-text {
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
