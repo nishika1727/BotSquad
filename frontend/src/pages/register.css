@@ -58,7 +58,7 @@ font-size: 0.9rem;
   padding: 14px 18px;
   border-radius: 10px;
   border: 1.5px solid var(--border-light);
-  font-size: 15px;
+  font-size: 16px; /* Prevents auto-zoom */
   background: var(--white);
   color: var(--text-main);
   transition: all 0.3s var(--ease-out);
@@ -167,7 +167,7 @@ font-size: 0.9rem;
 
   .register-form input {
     padding: 10px;
-    font-size: 0.95rem;
+    font-size: 16px; /* Prevents auto-zoom */
     margin-top: 4px;
   }
 

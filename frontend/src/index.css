@@ -785,7 +785,13 @@ body {
     letter-spacing: 0.5px;
   }
 
-  .menu-toggle-btn, .home-nav-btn {
+  .mobile-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .menu-toggle-btn, .mobile-header-btn {
     background: transparent;
     border: none;
     color: white;
@@ -799,7 +805,7 @@ body {
     transition: background-color 0.2s;
   }
 
-  .menu-toggle-btn:active, .home-nav-btn:active {
+  .menu-toggle-btn:active, .mobile-header-btn:active {
     background-color: rgba(255, 255, 255, 0.15);
   }
 
@@ -877,19 +883,28 @@ body {
     transform: translateX(0);
   }
 
+  /* Hide Desktop Header on mobile */
+  .chat-header {
+    display: none !important;
+  }
+
   /* Container adjustments for fixed mobile header */
   .chatpage-container {
     flex-direction: column;
     padding-top: 60px;
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height */
   }
 
   .right-area {
     width: 100%;
     height: calc(100vh - 60px);
+    height: calc(100dvh - 60px);
   }
 
-  .chat-area {
-    padding: 16px 14px 90px 14px !important;
+  /* Corrected .chat-area to .chat-body */
+  .chat-body {
+    padding: 16px 14px 100px 14px !important;
   }
 
   /* Chat input area becomes full width */
@@ -899,12 +914,12 @@ body {
     padding: 12px 16px;
   }
 
-  /* Input box full width */
+  /* Input box full width & auto-zoom prevention */
   .chat-input {
     max-width: 100% !important;
-    font-size: 15px;
-    padding: 14px 18px;
-    border-radius: 28px;
+    font-size: 16px !important; /* Prevents auto-zoom on iOS */
+    padding: 0 8px !important; /* Keep within flex-container bounds */
+    border-radius: 0 !important; /* Rounded border is on the parent .input-container */
   }
 
   .send-btn {

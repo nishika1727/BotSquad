@@ -475,13 +475,18 @@ const App = () => {
     <div className="chatpage-container">
       {/* MOBILE CHAT HEADER */}
       <header className="mobile-chat-header">
-        <button className="menu-toggle-btn" onClick={() => setIsMobileDrawerOpen(true)}>
+        <button className="menu-toggle-btn" onClick={() => setIsMobileDrawerOpen(true)} aria-label="Open menu">
           <FiMenu />
         </button>
         <span className="mobile-header-title">PU AI Assistant</span>
-        <button className="home-nav-btn" onClick={() => (window.location.href = "/")}>
-          <FiHome />
-        </button>
+        <div className="mobile-header-actions">
+          <button className="mobile-header-btn" onClick={() => setIsSettingsOpen(!isSettingsOpen)} title="Settings" aria-label="Open settings">
+            <FiSettings />
+          </button>
+          <button className="mobile-header-btn" onClick={() => (window.location.href = "/")} title="Home" aria-label="Go to home">
+            <FiHome />
+          </button>
+        </div>
       </header>
 
       {/* MOBILE DRAWER BACKDROP */}

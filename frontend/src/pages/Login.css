@@ -314,7 +314,7 @@
   .login-form input,
   .register-form input {
     padding: 14px 16px;
-    font-size: 15px;
+    font-size: 16px;
     border-radius: 10px;
   }
 
@@ -368,7 +368,7 @@
   .login-form input,
   .register-form input {
     padding: 12px 14px;
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .login-btn,
