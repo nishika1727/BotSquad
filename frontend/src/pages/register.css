@@ -4,6 +4,7 @@
    ================================================
 */
 
+<<<<<<< HEAD
 @import "./Login.css";
 
 .register-container {
@@ -12,6 +13,48 @@
   align-items: center;
   justify-content: flex-start;
   min-height: 100vh;
+=======
+.register-page {
+  width: 100%;
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  background: #ffffff7a;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.register-page h2 {
+  margin-bottom: 20px;
+  color: #b30000;
+}
+
+.register-form {
+  background: #ffe5e5;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.register-form label {
+font-size: 0.9rem;
+  font-weight: bold;
+  margin: 8px 0 4px;
+  color: #5a0000;
+  text-align: left; 
+}
+
+.register-form input {
+>>>>>>> 2c42db71b (make changes in responsive side)
   width: 100%;
   background: radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.03) 0%, transparent 40%),
               radial-gradient(circle at 90% 80%, rgba(139, 0, 0, 0.02) 0%, transparent 40%),
@@ -83,11 +126,56 @@
   margin-bottom: 5px;
 }
 
+<<<<<<< HEAD
 .register-btn {
   margin-top: 30px;
   padding: 20px;
   font-size: 17px;
   letter-spacing: 2px;
+=======
+.switch-auth .link:hover {
+  color: #af0202ff;
+  text-decoration: underline;
+}
+/* 🌐 Responsive design */
+@media (max-width: 480px) {
+  .register-page {
+    margin: 30px 16px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .register-form {
+    padding: 24px 20px;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 12px;
+  }
+
+  .register-page h2 {
+    font-size: 1.6rem;
+    margin-bottom: 15px;
+  }
+
+  .register-form label {
+    font-size: 0.85rem;
+    margin: 6px 0 2px;
+  }
+
+  .register-form input {
+    padding: 10px;
+    font-size: 0.95rem;
+    margin-top: 4px;
+  }
+
+  .btn {
+    padding: 11px;
+    font-size: 1rem;
+    margin-top: 15px;
+  }
+>>>>>>> 2c42db71b (make changes in responsive side)
 }
 
 @media (max-width: 900px) {

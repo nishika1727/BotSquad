@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+<<<<<<< HEAD
 import {
   FiSend,
   FiPaperclip,
@@ -10,6 +11,9 @@ import {
   FiMessageSquare,
   FiClock,
   FiPlus} from "react-icons/fi";
+=======
+import { FiSend, FiMenu, FiX, FiHome } from "react-icons/fi";
+>>>>>>> 2c42db71b (make changes in responsive side)
 import "./index.css";
 
 /* ── Types ───────────────────────────────────────── */
@@ -72,6 +76,7 @@ const getUserInitials = (name: string | null): string => {
    MAIN CHATBOT COMPONENT
    ════════════════════════════════════════════════════ */
 const App = () => {
+<<<<<<< HEAD
   const [messages,     setMessages]     = useState<Message[]>([]);
   const [sessions,     setSessions]     = useState<ChatSession[]>(loadSessions);
   const [input,        setInput]        = useState("");
@@ -81,6 +86,13 @@ const App = () => {
 
   const chatBodyRef      = useRef<HTMLDivElement>(null);
   const currentSessionId = useRef<string | null>(null);
+=======
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [firstScreen, setFirstScreen] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+>>>>>>> 2c42db71b (make changes in responsive side)
 
   const profile = {
     full_name:  localStorage.getItem("user_name"),
@@ -218,16 +230,81 @@ const App = () => {
      ════════════════════════════════════════════════ */
   return (
     <div className="chatpage-container">
+<<<<<<< HEAD
 
       {/* ── LEFT SIDEBAR ── */}
       <aside className="sidebar">
         <img src="/pu-logo.png" className="sidebar-logo" alt="PU Logo" />
+=======
+      {/* MOBILE CHAT HEADER */}
+      <header className="mobile-chat-header">
+        <button className="menu-toggle-btn" onClick={() => setIsMobileDrawerOpen(true)}>
+          <FiMenu />
+        </button>
+        <span className="mobile-header-title">PU AI Assistant</span>
+        <button className="home-nav-btn" onClick={() => (window.location.href = "/")}>
+          <FiHome />
+        </button>
+      </header>
+
+      {/* MOBILE DRAWER BACKDROP */}
+      {isMobileDrawerOpen && (
+        <div className="mobile-drawer-backdrop" onClick={() => setIsMobileDrawerOpen(false)} />
+      )}
+
+      {/* SIDEBAR */}
+      <aside className={`sidebar ${isMobileDrawerOpen ? "open" : ""}`}>
+        {/* Mobile close button in drawer */}
+        <button className="drawer-close-btn" onClick={() => setIsMobileDrawerOpen(false)}>
+          <FiX />
+        </button>
+
+        <img src="/pu-logo.png" className="sidebar-logo" />
+>>>>>>> 2c42db71b (make changes in responsive side)
         <h2 className="sidebar-title">PU AI Assistant</h2>
         <div className="sidebar-divider" />
 
+<<<<<<< HEAD
         <button className="new-chat-btn-sidebar" onClick={clearChat}>
           <FiPlus style={{ marginRight: "10px" }} /> New Chat
         </button>
+=======
+        {isGuest ? (
+          <>
+            <div className="guest-badge">Guest Mode</div>
+            <button
+              className="login-btn"
+              onClick={() => (window.location.href = "/login")}
+            >
+              Login
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="sidebar-user-avatar">
+              {getUserInitials(profile.full_name)}
+            </div>
+            <p className="sidebar-user-name">{profile.full_name}</p>
+
+            <div className="sidebar-user-details">
+              {profile.department && <p><strong>Dept:</strong> {profile.department}</p>}
+              {profile.batch && <p><strong>Batch:</strong> {profile.batch}</p>}
+              {profile.email && <p><strong>Email:</strong> {profile.email}</p>}
+            </div>
+
+            <button
+              className="logout-btn"
+              onClick={() => {
+                localStorage.clear();
+                window.location.reload();
+              }}
+            >
+              Logout
+            </button>
+          </>
+        )}
+      </aside>
+>>>>>>> 2c42db71b (make changes in responsive side)
 
         {/* Auth Section */}
         <div className="auth-group">

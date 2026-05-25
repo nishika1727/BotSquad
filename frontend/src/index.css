@@ -644,13 +644,268 @@ body {
   40% { transform: scale(1.0); }
 }
 
+<<<<<<< HEAD
 /* Landing (Empty State) */
 .landing-view {
+=======
+/* Mobile responsive elements (hidden on desktop) */
+.mobile-chat-header {
+  display: none;
+}
+.mobile-drawer-backdrop {
+  display: none;
+}
+.drawer-close-btn {
+  display: none;
+}
+.sidebar-user-details {
+  display: none;
+}
+
+/* ================================
+   📱 MOBILE RESPONSIVE (max 768px)
+   ================================ */
+@media (max-width: 768px) {
+  /* Mobile Header */
+  .mobile-chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #8b0000;
+    color: white;
+    padding: 0 16px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  }
+
+  .mobile-header-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .menu-toggle-btn, .home-nav-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+  }
+
+  .menu-toggle-btn:active, .home-nav-btn:active {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Backdrop Overlay */
+  .mobile-drawer-backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(3px);
+    z-index: 1000;
+    animation: fadeInOverlay 0.3s ease;
+  }
+
+  @keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Sidebar Drawer close and details */
+  .drawer-close-btn {
+    display: flex;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: #7a0000;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+  }
+
+  .sidebar-user-details {
+    display: block;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.45);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: 16px 0;
+    font-size: 13px;
+    color: #3e3223;
+    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .sidebar-user-details p {
+    margin: 6px 0;
+  }
+
+  /* Sidebar Drawer animation override */
+  .sidebar {
+    display: flex !important;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    height: 100vh;
+    width: 280px;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1001;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
+    background: #c6bfa5;
+    padding: 24px 20px;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Container adjustments for fixed mobile header */
+  .chatpage-container {
+    flex-direction: column;
+    padding-top: 60px;
+  }
+
+  .right-area {
+    width: 100%;
+    height: calc(100vh - 60px);
+  }
+
+  .chat-area {
+    padding: 16px 14px 90px 14px !important;
+  }
+
+  /* Chat input area becomes full width */
+  .chat-input-area {
+    left: 0 !important;
+    right: 0 !important;
+    padding: 12px 16px;
+  }
+
+  /* Input box full width */
+  .chat-input {
+    max-width: 100% !important;
+    font-size: 15px;
+    padding: 14px 18px;
+    border-radius: 28px;
+  }
+
+  .send-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+
+  /* Message bubble wider on small screens */
+  .msg-bubble {
+    max-width: 88% !important;
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+
+  /* Fix alignment */
+  .msg-row.user {
+    align-items: flex-end;
+  }
+  .msg-row.bot {
+    align-items: flex-start;
+  }
+
+  /* Quick tags wrap nicely */
+  .static-quick-tags,
+  .inline-quick-tags {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .static-quick-tags span {
+    margin-bottom: 8px;
+  }
+
+  /* Landing screen input width */
+  .first-input-box {
+    width: 92%;
+    padding: 6px 8px 6px 16px;
+  }
+
+  .first-input-box input {
+    font-size: 16px;
+  }
+
+  .first-input-box button {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+
+  .first-title {
+    font-size: 24px;
+    padding: 0 16px;
+    line-height: 1.35;
+    margin-bottom: 24px;
+  }
+
+  /* Heading size adjust */
+  .highlight-heading {
+    font-size: 16px;
+  }
+}
+.chat-area {
+>>>>>>> 2c42db71b (make changes in responsive side)
   flex: 1;
   display: flex;
   flex-direction: column;
+<<<<<<< HEAD
   justify-content: center;
   align-items: center;
+=======
+}
+/* Hide scrollbar */
+.chat-body::-webkit-scrollbar {
+  display: none;
+}
+
+.chat-body {
+  -ms-overflow-style: none;  /* IE */
+  scrollbar-width: none;     /* Firefox */
+}
+/* Sidebar User Avatar */
+.sidebar-user-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #d32f2f;
+  color: white;
+  font-size: 25px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 15px auto;
+  border: 3px solid white;
+}
+
+.sidebar-user-name {
+>>>>>>> 2c42db71b (make changes in responsive side)
   text-align: center;
   padding: 40px;
   animation: fadeIn 0.8s var(--ease-out);
