@@ -51,4 +51,3 @@ streamlit run app.py
 | 6    | Final testing, documentation, demo upload, and presentation prep |
 
 
-![Screenshot](images/screenshot.png)
