@@ -49,3 +49,6 @@ streamlit run app.py
 | 4    | Embedding with HuggingFace, indexing via LlamaIndex         |
 | 5    | Chatbot development and Streamlit interface integration     |
 | 6    | Final testing, documentation, demo upload, and presentation prep |
+
+
+![Screenshot](images/screenshot.png)
