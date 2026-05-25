@@ -238,12 +238,15 @@ footer {
 }
 .login-btn:hover { transform: scale(1.05); }
 
-<<<<<<< HEAD
 /* HERO */
 .hero-container {
   padding-top: 100px;
   min-height: 100vh;
-=======
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .start-btn:hover {
   background-color: #8b0e0e;
   transform: translateY(-2px);
@@ -396,7 +399,6 @@ footer {
   background: #7a0000;
   color: white;
   border-radius: 50%;
->>>>>>> 2c42db71b (make changes in responsive side)
   display: flex;
   align-items: center;
   justify-content: center;

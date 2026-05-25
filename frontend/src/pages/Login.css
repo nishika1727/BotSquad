@@ -61,7 +61,6 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
 }
 
-<<<<<<< HEAD
 .back-btn-premium:hover {
   transform: translateX(-5px);
   border-color: var(--crimson-primary);
@@ -92,15 +91,6 @@
   box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
   width: 100%;
   max-width: 440px;
-=======
-.login-form {
-  background: #ffe5e5;
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
-  width: 100%;
-  max-width: 355px;
->>>>>>> 2c42db71b (make changes in responsive side)
   display: flex;
   flex-direction: column;
   gap: 25px;
@@ -218,9 +208,13 @@
   cursor: pointer;
 }
 
-<<<<<<< HEAD
 .register-link strong {
   color: var(--crimson-primary);
+}
+
+.register-link:hover {
+  color: #af0202ff;
+  text-decoration: underline;
 }
 
 /* RIGHT PANEL */
@@ -265,11 +259,31 @@
 @media (max-width: 1024px) {
   .auth-right-panel {
     display: none;
-=======
-.register-link:hover {
-  color: #af0202ff;
-  text-decoration: underline;
+  }
+
+  .auth-left-panel {
+    max-width: 100%;
+    padding: 40px 20px;
+  }
+
+  .back-btn-premium {
+    left: 20px;
+    top: 20px;
+  }
 }
+
+@media (max-width: 768px) {
+  .auth-left-panel {
+    max-width: 100%;
+    padding: 40px 20px;
+  }
+
+  .back-btn-premium {
+    left: 20px;
+    top: 20px;
+  }
+}
+
 @media (max-width: 480px) {
   .login-container {
     padding: 0 16px;
@@ -311,7 +325,6 @@
 
   .login-title {
     font-size: 1.7rem;
->>>>>>> 2c42db71b (make changes in responsive side)
   }
 
   .auth-left-panel {

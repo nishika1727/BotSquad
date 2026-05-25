@@ -644,10 +644,6 @@ body {
   40% { transform: scale(1.0); }
 }
 
-<<<<<<< HEAD
-/* Landing (Empty State) */
-.landing-view {
-=======
 /* Mobile responsive elements (hidden on desktop) */
 .mobile-chat-header {
   display: none;
@@ -870,14 +866,9 @@ body {
   }
 }
 .chat-area {
->>>>>>> 2c42db71b (make changes in responsive side)
   flex: 1;
   display: flex;
   flex-direction: column;
-<<<<<<< HEAD
-  justify-content: center;
-  align-items: center;
-=======
 }
 /* Hide scrollbar */
 .chat-body::-webkit-scrollbar {
@@ -905,7 +896,6 @@ body {
 }
 
 .sidebar-user-name {
->>>>>>> 2c42db71b (make changes in responsive side)
   text-align: center;
   padding: 40px;
   animation: fadeIn 0.8s var(--ease-out);
