@@ -4,6 +4,7 @@ import {
   FiArrowLeft, FiUser, FiBook, FiHash, 
   FiMail, FiLock, FiHome, FiLayers, FiClock, FiStar, FiEye, FiEyeOff 
 } from "react-icons/fi";
+import { supabase } from "../supabaseClient";
 import "./register.css";
 
 const Register: React.FC = () => {
@@ -39,15 +40,42 @@ const Register: React.FC = () => {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5001/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      // 1. Supabase Auth signup
+      const { data, error } = await supabase.auth.signUp({
+        email: payload.email,
+        password: payload.password,
       });
 
-      const data = await res.json();
-      alert(data.message);
-      if (res.ok) navigate("/login");
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      // 2. Profile table mein extra student data insert karo
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert({
+            id: data.user.id,
+            full_name: payload.fullName,
+            batch: payload.batch,
+            department: payload.department,
+            course: payload.course,
+            semester_year: payload.semester_year,
+            program_type: payload.program_type,
+            hostel: payload.hostel,
+            category: payload.category,
+            email: payload.email,
+          });
+
+        if (profileError) {
+          console.error("Profile insert error:", profileError);
+          alert("Account created but profile save failed. Contact support.");
+        }
+      }
+
+      alert("Registration successful! Please check your email to verify your account.");
+      navigate("/login");
     } catch (err) {
       alert("Registration failed");
     } finally {
