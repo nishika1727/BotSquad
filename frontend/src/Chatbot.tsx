@@ -104,7 +104,15 @@ const relativeDate = (iso: string): string => {
 };
 
 /* ── Utilities ───────────────────────────────────── */
-const BACKEND_URL = "http://127.0.0.1:5000/api/chat";
+const getBackendUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (!envUrl) return "http://127.0.0.1:5000/api/chat";
+  if (envUrl.endsWith("/api/chat")) return envUrl;
+  if (envUrl.endsWith("/api/chat/")) return envUrl.slice(0, -1);
+  return envUrl.endsWith("/") ? `${envUrl}api/chat` : `${envUrl}/api/chat`;
+};
+
+const BACKEND_URL = getBackendUrl();
 
 const getUserInitials = (name: string | null): string => {
   if (!name) return "U";
