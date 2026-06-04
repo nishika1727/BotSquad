@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import React, { useEffect, useState, useRef } from "react";
-import { FiCpu, FiBookOpen, FiActivity, FiGlobe, FiShield, FiTrendingUp } from "react-icons/fi";
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { FiCpu, FiBookOpen, FiActivity, FiGlobe, FiShield, FiTrendingUp, FiLogOut, FiMessageSquare, FiEdit3 } from "react-icons/fi";
 import "./style.css";
 
 /* ════════════════════════════════════════
@@ -231,11 +231,32 @@ const CountUp: React.FC<{ end: number; duration?: number; suffix?: string }> = (
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState<string | null>(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  const profile = {
+    full_name:  localStorage.getItem("user_name"),
+    department: localStorage.getItem("user_department"),
+    batch:      localStorage.getItem("user_batch"),
+    email:      localStorage.getItem("user_email") || localStorage.getItem("user_id"),
+  };
 
   useEffect(() => {
     const name = localStorage.getItem("user_name");
     setUsername(name);
   }, []);
+
+  // Close dropdown when clicking outside
+  const handleClickOutside = useCallback((e: MouseEvent) => {
+    if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+      setProfileOpen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [handleClickOutside]);
 
   const getUserInitials = (name: string | null) => {
     if (!name) return "U";
@@ -274,19 +295,76 @@ const Home: React.FC = () => {
         </div>
         <div className="nav-right">
           {!username ? (
-            <button className="login-btn" onClick={() => navigate("/login")}>
-              PORTAL LOGIN
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button className="nav-register-btn" onClick={() => navigate("/register")}>
+                REGISTER
+              </button>
+              <button className="login-btn" onClick={() => navigate("/login")}>
+                PORTAL LOGIN
+              </button>
+            </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <div style={{
-                width: '45px', height: '45px', background: 'var(--navy-deep)', color: 'white',
-                borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: '900', border: '3px solid var(--gold-accent)', fontSize: '15px'
-              }}>
-                {getUserInitials(username)}
+            <div className="profile-dropdown-wrapper" ref={profileRef}>
+              <button
+                className="nav-avatar-btn"
+                onClick={() => setProfileOpen(!profileOpen)}
+                aria-label="Open profile menu"
+              >
+                <div className="nav-avatar-circle">
+                  {getUserInitials(username)}
+                </div>
+                <span className="nav-avatar-name">{username.split(" ")[0]}</span>
+                <svg className={`nav-avatar-chevron ${profileOpen ? 'open' : ''}`} width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+
+              {/* ── PROFILE DROPDOWN CARD ── */}
+              <div className={`profile-dropdown ${profileOpen ? 'open' : ''}`}>
+                <div className="profile-dropdown-header">
+                  <div className="profile-dropdown-avatar">
+                    {getUserInitials(username)}
+                  </div>
+                  <div className="profile-dropdown-info">
+                    <h4>{profile.full_name || "Student"}</h4>
+                    <p>{profile.email || "—"}</p>
+                  </div>
+                </div>
+
+                <div className="profile-dropdown-divider" />
+
+                <div className="profile-dropdown-details">
+                  {profile.department && (
+                    <div className="profile-detail-row">
+                      <span className="profile-detail-label">Department</span>
+                      <span className="profile-detail-value">{profile.department}</span>
+                    </div>
+                  )}
+                  {profile.batch && (
+                    <div className="profile-detail-row">
+                      <span className="profile-detail-label">Batch</span>
+                      <span className="profile-detail-value">{profile.batch}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="profile-dropdown-divider" />
+
+                <div className="profile-dropdown-actions">
+                  <button className="profile-action-btn" onClick={() => { setProfileOpen(false); navigate("/chat"); }}>
+                    <FiMessageSquare /> AI Assistant
+                  </button>
+                  <button className="profile-action-btn" onClick={() => { setProfileOpen(false); navigate("/complete-profile"); }}>
+                    <FiEdit3 /> Edit Profile
+                  </button>
+                </div>
+
+                <div className="profile-dropdown-divider" />
+
+                <button className="profile-logout-btn" onClick={handleLogout}>
+                  <FiLogOut /> Sign Out
+                </button>
               </div>
-              <button onClick={handleLogout} className="logout-btn">SIGN OUT</button>
             </div>
           )}
         </div>

@@ -21,7 +21,10 @@ import {
   FiVolumeX,
   FiZap,
   FiArrowDown,
-  FiAlertTriangle} from "react-icons/fi";
+  FiAlertTriangle,
+  FiLogOut,
+  FiEdit3
+} from "react-icons/fi";
 import "./index.css";
 
 /* ── Types ───────────────────────────────────────── */
@@ -136,10 +139,23 @@ const App = () => {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [settings, setSettings] = useState<Settings>(loadSettings);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const chatBodyRef = useRef<HTMLDivElement>(null);
   const currentSessionId = useRef<string | null>(null);
   const recognitionRef = useRef<any>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  // Click outside profile dropdown to close it
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   const profile = {
     full_name:  localStorage.getItem("user_name"),
@@ -517,44 +533,6 @@ const App = () => {
           <FiPlus style={{ marginRight: "10px" }} /> New Chat
         </button>
 
-        {/* Auth Section */}
-        <div className="auth-group">
-          {isGuest ? (
-            <>
-              <button className="guest-btn">Guest Mode</button>
-              <button className="login-btn-premium" onClick={() => window.location.href = "/login"}>
-                Login
-              </button>
-            </>
-          ) : (
-            <div style={{ textAlign: "center", width: "100%" }}>
-              <div className="sidebar-user-avatar">
-                {getUserInitials(profile.full_name)}
-              </div>
-              <p className="sidebar-user-name" style={{ margin: "10px 0", fontSize: "14px", fontWeight: 600 }}>
-                {profile.full_name}
-              </p>
-
-              <div className="sidebar-user-details">
-                {profile.department && <p><strong>Dept:</strong> {profile.department}</p>}
-                {profile.batch && <p><strong>Batch:</strong> {profile.batch}</p>}
-                {profile.email && <p><strong>Email:</strong> {profile.email}</p>}
-              </div>
-
-              <button
-                className="guest-btn"
-                style={{ marginTop: "12px" }}
-                onClick={() => {
-                  localStorage.clear();
-                  window.location.reload();
-                }}
-              >
-                Logout
-              </button>
-            </div>
-          )}
-        </div>
-
         {/* ── Recent Inquiries — LIVE from localStorage ── */}
         <div className="recent-chats">
           <p className="recent-title">
@@ -601,6 +579,82 @@ const App = () => {
             <button className="action-btn" onClick={clearChat} title="New Chat"><FiTrash2 /></button>
             <button className="action-btn" onClick={exportChat} title="Export Chat"><FiDownload /></button>
             <button className="action-btn" title="Settings" onClick={() => setIsSettingsOpen(!isSettingsOpen)}><FiSettings /></button>
+
+            {/* Profile Dropdown or Login button on Top Right */}
+            {isGuest ? (
+              <button 
+                className="guest-btn" 
+                onClick={() => window.location.href = "/login"}
+                style={{ padding: "8px 16px", fontSize: "12px", width: "auto", border: "1.5px solid var(--border-light)", color: "var(--text-muted)", borderRadius: "100px", cursor: "pointer" }}
+              >
+                Login
+              </button>
+            ) : (
+              <div className="profile-dropdown-wrapper" ref={profileRef}>
+                <button
+                  className="nav-avatar-btn"
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  aria-label="Open profile menu"
+                >
+                  <div className="nav-avatar-circle">
+                    {getUserInitials(profile.full_name)}
+                  </div>
+                  <svg className={`nav-avatar-chevron ${profileOpen ? 'open' : ''}`} width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+
+                {/* ── PROFILE DROPDOWN CARD ── */}
+                <div className={`profile-dropdown ${profileOpen ? 'open' : ''}`}>
+                  <div className="profile-dropdown-header">
+                    <div className="profile-dropdown-avatar">
+                      {getUserInitials(profile.full_name)}
+                    </div>
+                    <div className="profile-dropdown-info">
+                      <h4>{profile.full_name || "Student"}</h4>
+                      <p>{profile.email || "—"}</p>
+                    </div>
+                  </div>
+
+                  <div className="profile-dropdown-divider" />
+
+                  <div className="profile-dropdown-details">
+                    {profile.department && (
+                      <div className="profile-detail-row">
+                        <span className="profile-detail-label">Department</span>
+                        <span className="profile-detail-value">{profile.department}</span>
+                      </div>
+                    )}
+                    {profile.batch && (
+                      <div className="profile-detail-row">
+                        <span className="profile-detail-label">Batch</span>
+                        <span className="profile-detail-value">{profile.batch}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="profile-dropdown-divider" />
+
+                  <div className="profile-dropdown-actions">
+                    <button className="profile-action-btn" onClick={() => { setProfileOpen(false); window.location.href = "/"; }}>
+                      <FiHome /> Home Portal
+                    </button>
+                    <button className="profile-action-btn" onClick={() => { setProfileOpen(false); window.location.href = "/complete-profile"; }}>
+                      <FiEdit3 /> Edit Profile
+                    </button>
+                  </div>
+
+                  <div className="profile-dropdown-divider" />
+
+                  <button className="profile-logout-btn" onClick={() => {
+                    localStorage.clear();
+                    window.location.reload();
+                  }}>
+                    <FiLogOut /> Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </header>
 

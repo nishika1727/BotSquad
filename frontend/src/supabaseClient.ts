@@ -1,4 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -6,7 +7,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 // Recursive Proxy to mock supabase client and prevent crashes when env vars are missing
 const makeMock = (path: string = 'supabase'): any => {
   return new Proxy(() => {}, {
-    get: (target, prop) => {
+    get: (_target, prop) => {
       if (prop === 'then') {
         return (resolve: any) => {
           console.warn(`[Supabase Warning] Accessing "${path}" but Supabase is not configured.`);
@@ -18,13 +19,13 @@ const makeMock = (path: string = 'supabase'): any => {
       }
       return makeMock(`${path}.${String(prop)}`);
     },
-    apply: (target, thisArg, argumentsList) => {
+    apply: (_target, _thisArg, _argumentsList) => {
       return makeMock(`${path}(...)`);
     }
   });
 };
 
-let client: any;
+let client: SupabaseClient;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error(

@@ -473,6 +473,7 @@ body {
 .header-actions {
   display: flex;
   gap: 15px;
+  align-items: center;
 }
 
 .action-btn {
@@ -1761,3 +1762,256 @@ body {
   border-color: var(--crimson-primary);
   color: var(--crimson-primary);
 }
+
+/* ══════════════════════════════════════
+   AVATAR DROPDOWN FOR CHAT PAGE
+   ══════════════════════════════════════ */
+.profile-dropdown-wrapper {
+  position: relative;
+}
+
+.nav-avatar-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1.5px solid rgba(226, 217, 208, 0.8);
+  border-radius: 100px;
+  padding: 4px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(10px);
+}
+
+.nav-avatar-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--gold-accent);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.15);
+  transform: translateY(-1px);
+}
+
+.nav-avatar-circle {
+  width: 32px;
+  height: 32px;
+  background: var(--crimson-gradient);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  border: 2px solid var(--gold-accent);
+  box-shadow: 0 2px 6px rgba(139, 0, 0, 0.15);
+}
+
+.nav-avatar-chevron {
+  color: var(--text-muted);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-right: 4px;
+}
+
+.nav-avatar-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Card */
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 300px;
+  background: rgba(250, 247, 242, 0.95);
+  backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid rgba(226, 217, 208, 0.8);
+  border-radius: 18px;
+  box-shadow:
+    0 20px 50px rgba(15, 23, 42, 0.1),
+    0 5px 15px rgba(139, 0, 0, 0.05);
+  padding: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px) scale(0.97);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 2000;
+  overflow: hidden;
+}
+
+.profile-dropdown.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.profile-dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 16px 14px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.02) 0%, rgba(139, 0, 0, 0.02) 100%);
+}
+
+.profile-dropdown-avatar {
+  width: 44px;
+  height: 44px;
+  background: var(--crimson-gradient);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  border: 2px solid var(--gold-accent);
+  box-shadow: 0 3px 10px rgba(139, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.profile-dropdown-info h4 {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--navy-deep);
+  margin: 0 0 2px;
+}
+
+.profile-dropdown-info p {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0;
+  word-break: break-all;
+}
+
+.profile-dropdown-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--border-light, #E2D9D0) 50%, transparent 100%);
+  margin: 0;
+}
+
+.profile-dropdown-details {
+  padding: 12px 16px;
+}
+
+.profile-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.profile-detail-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.profile-detail-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy-deep);
+}
+
+.profile-dropdown-actions {
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profile-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy-deep);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.profile-action-btn:hover {
+  background: rgba(139, 0, 0, 0.05);
+  color: var(--crimson-primary);
+  transform: translateX(2px);
+}
+
+.profile-action-btn svg {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.profile-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: calc(100% - 16px);
+  margin: 6px 8px 12px;
+  background: rgba(139, 0, 0, 0.05);
+  border: 1.5px solid rgba(139, 0, 0, 0.1);
+  padding: 9px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--crimson-primary);
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 0.5px;
+}
+
+.profile-logout-btn:hover {
+  background: var(--crimson-primary);
+  border-color: var(--crimson-primary);
+  color: white;
+  box-shadow: 0 4px 15px rgba(139, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+/* Dark Mode support for Profile Dropdown in Chatbot */
+.dark-mode .profile-dropdown {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .profile-dropdown-header {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(139, 0, 0, 0.05) 100%);
+}
+
+.dark-mode .profile-dropdown-info h4 {
+  color: white;
+}
+
+.dark-mode .profile-detail-value {
+  color: #e2e8f0;
+}
+
+.dark-mode .profile-action-btn {
+  color: #e2e8f0;
+}
+
+.dark-mode .profile-action-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--gold-accent);
+}
+
+.dark-mode .nav-avatar-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .nav-avatar-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--gold-accent);
+}
+
