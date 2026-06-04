@@ -1,4 +1,5 @@
 import os
+import re
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -128,7 +129,11 @@ session = {
 # ---------------------------
 # MAIN ANSWER GENERATOR
 # ---------------------------
-def generate_answer(query, pipeline):
+def generate_answer(query, pipeline=None, student_profile=None):
+    if pipeline is None:
+        pipeline = globals().get("pipeline")
+        if pipeline is None:
+            pipeline = initialize_pipeline()
 
     llm = pipeline["llm"]
     index = pipeline["index"]
@@ -147,10 +152,30 @@ def generate_answer(query, pipeline):
     retriever = index.as_retriever(similarity_top_k=3)
     context = "\n\n---\n\n".join(node.get_content() for node in retriever.retrieve(query))
 
+    personalization_prompt = ""
+    if student_profile and student_profile.get("full_name"):
+        name = student_profile.get("full_name").strip()
+        dept = student_profile.get("department", "").strip()
+        batch = student_profile.get("batch", "").strip()
+        
+        personalization_prompt = f"""
+[STUDENT PROFILE]
+- Name: {name}
+- Department: {dept if dept else "Panjab University"}
+- Batch: {batch if batch else "Current"}
+
+[PERSONALIZATION & EMOTIONAL INTELLIGENCE RULES]
+1. Address the student by their name '{name}' at the very beginning of your response in a warm, welcoming, and personalized manner (e.g. "Hello {name}!", "Hi {name}!").
+2. Answer their query using the context but frame it as helpful, step-by-step guidance tailored specifically for {name}. Make them feel cared for and guided, using a warm and encouraging tone.
+3. If their department '{dept}' is relevant to the query and details about it are present in the context, highlight and prioritize those details for them first to make it highly relevant to their academic journey.
+4. Conclude your answer with a friendly, supportive closing sentence referencing their status or department, e.g. "Hope this helps you, {name}! Let me know if you need anything else for your studies in {dept}." or "Wishing you the best, {name}!"
+5. Rule of Strict Truth: All academic details, requirements, and dates must be strictly verified from the context. Do not invent any university regulations or dates.
+"""
+
     # Prompt preserved as-is (your rules)
     prompt = f"""
 You are PU-Assistant, the official AI helpdesk chatbot of Panjab University, Chandigarh.
-
+{personalization_prompt}
 You must answer the student's query *strictly* using the verified information provided below in the context.
  Never use your own knowledge, never guess, and never add anything not explicitly present in the context.
 
@@ -242,9 +267,33 @@ Follow-Up Suggestions (only after giving a complete answer):
             "follow_ups": []
         }
 
+    # Extract dynamic follow up questions from the response
+    follow_ups = []
+    cleaned_reply = reply
+    match = re.search(r"(?:Know more about|Suggestions?|Follow-up questions?):?\s*\n((?:\s*[-*\d\.]+\s*.*\n?)+)", reply, re.IGNORECASE)
+    if match:
+        list_block = match.group(1)
+        items = re.findall(r"^\s*[-*\d\.]+\s*(.+)$", list_block, re.MULTILINE)
+        follow_ups = [item.strip() for item in items if item.strip()]
+        cleaned_reply = reply[:match.start()].strip()
+
+    # Extract links and separate pdf files
+    parsed_links = []
+    pdf_url = None
+    link_matches = re.findall(r"\[([^\]]+)\]\((https?://[^\)]+)\)", cleaned_reply)
+    for label, url in link_matches:
+        url_clean = url.strip()
+        label_clean = label.strip()
+        if url_clean.endswith(".pdf"):
+            pdf_url = url_clean
+        else:
+            parsed_links.append({"label": label_clean, "url": url_clean})
+
     return {
-        "reply": reply,
-        "follow_ups": ["Scholarships", "Hostels", "Campus Life"]
+        "reply": cleaned_reply,
+        "follow_ups": follow_ups or ["Scholarships", "Hostels", "Campus Life"],
+        "links": parsed_links,
+        "pdf": pdf_url
     }
 
 
@@ -259,7 +308,8 @@ CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
 def chat():
     data = request.get_json()
     query = data.get("message", "")
-    result = generate_answer(query, pipeline)
+    student_profile = data.get("student_profile", None)
+    result = generate_answer(query, pipeline, student_profile)
     return jsonify(result)
 
 

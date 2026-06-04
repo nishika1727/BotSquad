@@ -13,16 +13,24 @@ def home():
 def chat():
     data = request.json
     query = data.get('message')
+    student_profile = data.get('student_profile', None)
     print(f"Received query: {query}")
 
     try:
-        answer = generate_answer(query)
+        result = generate_answer(query, student_profile=student_profile)
+        if isinstance(result, dict):
+            return jsonify(result)
+        else:
+            return jsonify({
+                "reply": result,
+                "follow_ups": ["Scholarships", "Hostels", "Campus Life"]
+            })
     except Exception as e:
         print(f"❌ Error: {e}")
-        answer = "Sorry, something went wrong. Please visit the admin office."
-
-    print(f"Generated answer: {answer}")
-    return jsonify({"reply": answer})
+        return jsonify({
+            "reply": "Sorry, something went wrong. Please visit the admin office.",
+            "follow_ups": []
+        })
 
 if __name__ == '__main__':
     app.run(port=5000)
